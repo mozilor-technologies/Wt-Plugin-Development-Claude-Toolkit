@@ -168,7 +168,7 @@ your-plugin/
 │   ├── settings.json.example    ← template (no credentials)
 │   ├── commands/                ← 19 wt-* slash commands
 │   ├── agents/                  ← 9 custom AI agents
-│   ├── skills/                  ← 18 wp-* + context skills
+│   ├── skills/                  ← 19 wp-* + context skills
 │   └── scripts/                 ← automation bash scripts
 ├── Tasks/
 │   └── feature/
@@ -356,6 +356,7 @@ Skills are domain knowledge libraries loaded into Claude's context on demand. Th
 | `context-load-plan` | Session start | Restores active plan from `.context/plans/` |
 | `context-init` | Plugin init | Sets up `.context/` folder and git hooks |
 | `context-find-plan` | Debugging | Traces a git commit hash back to its originating plan |
+| `wp-symlink-check` | Session start | Checks if the plugin has a symlink directly under `wp-content/plugins/`; asks the user to create one if missing |
 
 ---
 
