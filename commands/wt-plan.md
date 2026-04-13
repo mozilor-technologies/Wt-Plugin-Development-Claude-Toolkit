@@ -5,7 +5,7 @@ model: claude-opus-4-6
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Skills/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -31,16 +31,16 @@ You are acting as a Senior WordPress/WooCommerce plugin architect.
 
 ### Step 1: Find the feature folder
 
-Look for the most recently modified folder under `Skills/feature/`.
+Look for the most recently modified folder under `Tasks/feature/`.
 If multiple folders exist, ask:
 ```
 Which feature do you want to plan?
-[list folders found under Skills/feature/]
+[list folders found under Tasks/feature/]
 ```
 
 Read:
-- `Skills/feature/{ticket}-{name}/PRD.md`
-- `Skills/feature/{ticket}-{name}/figma-notes.md` (if exists)
+- `Tasks/feature/{ticket}-{name}/PRD.md`
+- `Tasks/feature/{ticket}-{name}/figma-notes.md` (if exists)
 
 ---
 
@@ -99,7 +99,7 @@ Wait for all four sub-agents to complete before writing the plan.
 
 > This step runs on **claude-opus-4-6** (set in skill frontmatter). Deep architectural reasoning — takes all research from sub-agents and synthesizes a precise, developer-ready plan.
 
-Write `Skills/feature/{ticket}-{name}/plan.md` using this structure:
+Write `Tasks/feature/{ticket}-{name}/plan.md` using this structure:
 
 ```markdown
 # Plan: [Feature Name]
@@ -189,7 +189,7 @@ git checkout -b feature/IS-{ticket}-{feature-name}
 
 4. Confirm and show next step:
 ```
-✅ Plan approved and saved to Skills/feature/IS-123-name/plan.md
+✅ Plan approved and saved to Tasks/feature/IS-123-name/plan.md
 ✅ Plan saved to .context/plans/ (session-persistent, commit-traceable)
 ✅ Branch ready: feature/IS-123-tiktok-shop-feed
 [X] tasks ready for design review.

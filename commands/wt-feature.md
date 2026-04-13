@@ -5,7 +5,7 @@ model: claude-sonnet-4-6
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Skills/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -90,7 +90,7 @@ git checkout -b feature/{JIRA-TICKET}-{feature-name}
 ```
 Show: `✅ feature/{JIRA-TICKET}-{feature-name} created from release/{version}`
 
-**Save the target release version** to `Skills/feature/{JIRA-TICKET}-{feature-name}/.release-version`:
+**Save the target release version** to `Tasks/feature/{JIRA-TICKET}-{feature-name}/.release-version`:
 ```
 {version}
 ```
@@ -128,12 +128,12 @@ Wait for all three sub-agents to complete before continuing.
 
 Create the folder:
 ```
-Skills/feature/{JIRA-TICKET}-{feature-name}/
+Tasks/feature/{JIRA-TICKET}-{feature-name}/
 ```
 
 For example:
 ```
-Skills/feature/IS-123-tiktok-shop-feed/
+Tasks/feature/IS-123-tiktok-shop-feed/
 ```
 
 ---
@@ -142,7 +142,7 @@ Skills/feature/IS-123-tiktok-shop-feed/
 
 Save the PRD content (from Sub-agent A) to:
 ```
-Skills/feature/IS-123-feature-name/PRD.md
+Tasks/feature/IS-123-feature-name/PRD.md
 ```
 
 Use this structure:
@@ -185,7 +185,7 @@ Confluence: [original link]
 
 Save design notes (from Sub-agent B) to:
 ```
-Skills/feature/IS-123-feature-name/figma-notes.md
+Tasks/feature/IS-123-feature-name/figma-notes.md
 ```
 
 Use this structure:
@@ -219,7 +219,7 @@ Display:
    release/{version}               ← base branch (from master)
    feature/{JIRA-TICKET}-{name}    ← your working branch
 
-✅ Feature folder created: Skills/feature/{JIRA-TICKET}-{feature-name}/
+✅ Feature folder created: Tasks/feature/{JIRA-TICKET}-{feature-name}/
 ✅ PRD.md saved (from Confluence)
 ✅ figma-notes.md saved (from Figma)   ← or "skipped (no Figma)"
 

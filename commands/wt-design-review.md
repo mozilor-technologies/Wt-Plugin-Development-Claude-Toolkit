@@ -57,7 +57,7 @@ Approve plan to proceed? (yes / no)
 ```
 
 - **yes** →
-  1. Write `Skills/feature/{ticket}-{name}/.plan-approved`:
+  1. Write `Tasks/feature/{ticket}-{name}/.plan-approved`:
      ```
      approved_by: {user — inline approval}
      approved_at: {today's date}
@@ -90,7 +90,7 @@ Derive the plan branch name:
 
 Find `plan.md` at:
 ```
-Skills/feature/{ticket}-{name}/plan.md
+Tasks/feature/{ticket}-{name}/plan.md
 ```
 
 If no plan.md exists → STOP:
@@ -101,7 +101,7 @@ Run /wt-plan first to generate the implementation plan.
 
 Check if `.plan-approved` already exists:
 ```
-Skills/feature/{ticket}-{name}/.plan-approved
+Tasks/feature/{ticket}-{name}/.plan-approved
 ```
 
 If it exists → show:
@@ -149,8 +149,8 @@ git checkout -b plan/{ticket}-{name} origin/plan/{ticket}-{name}
 
 Stage only the plan and PRD files:
 ```bash
-git add Skills/feature/{ticket}-{name}/plan.md
-git add Skills/feature/{ticket}-{name}/PRD.md 2>/dev/null || true
+git add Tasks/feature/{ticket}-{name}/plan.md
+git add Tasks/feature/{ticket}-{name}/PRD.md 2>/dev/null || true
 git status
 ```
 
@@ -348,7 +348,7 @@ Tell me what changes to make, or edit plan.md manually.
 After plan.md is updated, switch to the plan branch, commit, and push:
 ```bash
 git checkout plan/{ticket}-{name}
-git add Skills/feature/{ticket}-{name}/plan.md
+git add Tasks/feature/{ticket}-{name}/plan.md
 git commit -m "{ticket}: docs: update plan based on review feedback"
 git push origin plan/{ticket}-{name}
 git checkout feature/{ticket}-{name}
@@ -408,7 +408,7 @@ git pull origin feature/{ticket}-{name}
 
 **3. Save the approval status:**
 
-Write `Skills/feature/{ticket}-{name}/.plan-approved`:
+Write `Tasks/feature/{ticket}-{name}/.plan-approved`:
 ```
 approved_by: {reviewer display_name}
 approved_at: {ISO timestamp}

@@ -9,7 +9,7 @@ Reviews changes, gets user approval, and commits to Bitbucket with proper PR wor
 1. Load plugin CLAUDE.md (Bitbucket repo, reviewers, Jira keys)
 2. Check: Did all testing gates pass? (verify .wt-state)
    - If not: BLOCK, ask to run testing phase first
-3. Load feature details from Skills/feature/{TICKET}/
+3. Load feature details from Tasks/feature/{TICKET}/
    - Feature name
    - Jira ticket
    - Branch naming rules (feature/IS-{ticket}-{description})

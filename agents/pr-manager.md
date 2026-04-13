@@ -38,8 +38,8 @@ git push -u origin feature/{ticket}-{feature_name} 2>&1
 2. Create plan branch from feature branch:
 ```bash
 git checkout -b plan/{ticket}-{feature_name}
-git add Skills/feature/{ticket}-{feature_name}/plan.md
-git add Skills/feature/{ticket}-{feature_name}/PRD.md 2>/dev/null || true
+git add Tasks/feature/{ticket}-{feature_name}/plan.md
+git add Tasks/feature/{ticket}-{feature_name}/PRD.md 2>/dev/null || true
 git diff --cached --quiet || git commit -m "{ticket}: docs: add implementation plan for review"
 git push -u origin plan/{ticket}-{feature_name}
 git checkout feature/{ticket}-{feature_name}

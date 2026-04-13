@@ -7,7 +7,7 @@ Builds PHP code, hooks, filters, and database schema based on approved implement
 
 ## Task
 1. Load plugin CLAUDE.md (config, prefix, text domain)
-2. Load plan.md from Skills/feature/{TICKET}/
+2. Load plan.md from Tasks/feature/{TICKET}/
 3. Ask for approval to proceed (verify plan is still correct)
 4. For each task in plan.md:
    - Ask clarifying questions if needed

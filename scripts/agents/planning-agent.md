@@ -14,7 +14,7 @@ Reads PRD from any source (Confluence, Jira, external document, or user prompt) 
    - d) Describe the feature (user prompt)
 3. If Confluence/Jira/external: Fetch and read the document
 4. Ask clarifying questions about requirements
-5. Create folder: Skills/feature/{JIRA_TICKET}-{feature-name}/
+5. Create folder: Tasks/feature/{JIRA_TICKET}-{feature-name}/
 6. Write PRD.md with requirements
 7. Generate comprehensive implementation plan
 8. Write plan.md with:
@@ -28,9 +28,9 @@ Reads PRD from any source (Confluence, Jira, external document, or user prompt) 
 10. Save state: phase="planning", status="completed"
 
 ## Outputs
-- Skills/feature/{TICKET}/PRD.md
-- Skills/feature/{TICKET}/plan.md
-- Skills/feature/{TICKET}/.wt-state (planning: completed)
+- Tasks/feature/{TICKET}/PRD.md
+- Tasks/feature/{TICKET}/plan.md
+- Tasks/feature/{TICKET}/.wt-state (planning: completed)
 
 ## Success Criteria
 ✅ PRD clearly documents requirements
@@ -46,7 +46,7 @@ Reads PRD from any source (Confluence, Jira, external document, or user prompt) 
 
 ## Tools Needed
 - Atlassian MCP (Jira, Confluence)
-- File system access (create Skills/feature/{TICKET}/)
+- File system access (create Tasks/feature/{TICKET}/)
 - User interaction (approval)
 
 ## Agent Type

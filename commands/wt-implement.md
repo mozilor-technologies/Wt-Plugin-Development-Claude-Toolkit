@@ -5,7 +5,7 @@ model: claude-sonnet-4-6
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Skills/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -51,7 +51,7 @@ git branch --show-current
 
 Check if `.plan-approved` exists:
 ```
-Skills/feature/{ticket}-{name}/.plan-approved
+Tasks/feature/{ticket}-{name}/.plan-approved
 ```
 
 Also check `Support/{ticket}/.plan-approved` for support tickets.
@@ -85,7 +85,7 @@ Then proceed to Step 1.
 **Load saved plan context (AI Engineering Playbook — session continuity):**
 Invoke the **context-load-plan** skill to restore the approved plan from `.context/plans/` into the current session. This ensures implementation always starts from the saved, approved plan — not from memory.
 
-If no saved plan is found → look for `plan.md` under `Skills/feature/` subfolders as fallback.
+If no saved plan is found → look for `plan.md` under `Tasks/feature/` subfolders as fallback.
 If multiple exist, ask the user which feature to implement.
 
 **Read /ai-context/ files (plugin-specific context):**
@@ -98,7 +98,7 @@ ai-context/observability-standards.md
 These must be loaded before writing any code. If not present, remind the user to run `/wt-init-plugin`.
 
 **Check iteration counter:**
-Read `Skills/feature/{ticket}-{name}/.claude-iterations` (create with value `0` if missing).
+Read `Tasks/feature/{ticket}-{name}/.claude-iterations` (create with value `0` if missing).
 Increment by 1 and save. If the count reaches **5**:
 ```
 ⚠️  Iteration limit reached (5/5).

@@ -5,7 +5,7 @@ model: claude-haiku-4-5-20251001
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Skills/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -47,7 +47,7 @@ git branch --show-current
 Read the target release version from the feature folder:
 ```bash
 TICKET=$(git branch --show-current | grep -oE '[A-Z]+-[0-9]+')
-cat Skills/feature/${TICKET}-*/.release-version 2>/dev/null || cat Skills/feature/${TICKET}*/.release-version 2>/dev/null
+cat Tasks/feature/${TICKET}-*/.release-version 2>/dev/null || cat Tasks/feature/${TICKET}*/.release-version 2>/dev/null
 ```
 
 - If `.release-version` file found → destination branch = `release/{version}`

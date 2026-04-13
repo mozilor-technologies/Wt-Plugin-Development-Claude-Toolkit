@@ -30,7 +30,7 @@ Then try again.
 
 Extract ticket from user message (e.g. `IS-534`).
 
-State file: `Skills/feature/{ticket}-*/.orchestrator-state.json`
+State file: `Tasks/feature/{ticket}-*/.orchestrator-state.json`
 
 If state file exists → read `current_phase` and `completed_phases`.
 
@@ -83,7 +83,7 @@ Show: `🔍 Research — launching agents in parallel...`
 Launch agents from `pipeline.research_agents` **simultaneously in background**:
 
 - If `prd-fetcher` in list → invoke **prd-fetcher** agent (background)
-  - Input: `ticket`, `feature_folder = Skills/feature/{ticket}-{feature_name}`
+  - Input: `ticket`, `feature_folder = Tasks/feature/{ticket}-{feature_name}`
 - If `design-reader` in list → ask user: "Is there a Figma link? (paste or skip)"
   - If provided → invoke **design-reader** agent (background)
 - If `code-explorer` in list → invoke **code-explorer** agent (background)
@@ -96,7 +96,7 @@ Update state: add `research` to completed_phases, `current_phase = "branch-setup
 Show:
 ```
 ✅ Research complete
-   PRD saved:      Skills/feature/{ticket}-{feature_name}/PRD.md
+   PRD saved:      Tasks/feature/{ticket}-{feature_name}/PRD.md
    Figma notes:    saved / skipped
    Codebase scan:  {N} relevant files found
 ```
@@ -135,7 +135,7 @@ Create feature branch:
 git checkout -b feature/{ticket}-{feature_name}
 ```
 
-Save `.release-version` file: `Skills/feature/{ticket}-{feature_name}/.release-version`
+Save `.release-version` file: `Tasks/feature/{ticket}-{feature_name}/.release-version`
 
 Update state: add `branch-setup`, `current_phase = "plan"`, save `release_version`
 
@@ -151,16 +151,16 @@ Invoke agent: **feature-planner**
 ```
 Input:
   ticket = {ticket}
-  feature_folder = Skills/feature/{ticket}-{feature_name}
+  feature_folder = Tasks/feature/{ticket}-{feature_name}
   code_explorer_output = {output from code-explorer}
   complexity = {complexity}
 ```
 
 Show plan summary returned by agent, then:
 ```
-📋 Plan saved: Skills/feature/{ticket}-{feature_name}/plan.md
+📋 Plan saved: Tasks/feature/{ticket}-{feature_name}/plan.md
 
-Review the plan: cat "Skills/feature/{ticket}-{feature_name}/plan.md"
+Review the plan: cat "Tasks/feature/{ticket}-{feature_name}/plan.md"
 
 Approve? (yes / revise / cancel)
 ```
@@ -219,7 +219,7 @@ If not yet approved → show: `⏳ Still waiting for approval. PR: {pr_url}`
 
 If approved:
 - Invoke **pr-manager**: `mode = merge-plan-pr`
-- Write `Skills/feature/{ticket}-{feature_name}/.plan-approved`
+- Write `Tasks/feature/{ticket}-{feature_name}/.plan-approved`
 - Transition Jira to In Progress (transition id: 21)
 - Update state: add `pr-approval`, `current_phase = "implement"`
 - Proceed to Step 5

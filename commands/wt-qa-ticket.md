@@ -30,7 +30,7 @@ Read `CLAUDE.md` for:
 - `QA Tester` email
 - Plugin slug and repo name
 
-Read the approved plan from `.context/plans/` (via **context-load-plan**) or fall back to `Skills/feature/{ticket}-{name}/plan.md` for the feature description and task list.
+Read the approved plan from `.context/plans/` (via **context-load-plan**) or fall back to `Tasks/feature/{ticket}-{name}/plan.md` for the feature description and task list.
 
 ---
 

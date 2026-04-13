@@ -114,7 +114,7 @@ Generated: {date}
 {
   "ticket": "IS-534",
   "plan_saved": true,
-  "plan_path": "Skills/feature/IS-534-name/plan.md",
+  "plan_path": "Tasks/feature/IS-534-name/plan.md",
   "task_count": 6,
   "files_to_create": 3,
   "files_to_modify": 2,

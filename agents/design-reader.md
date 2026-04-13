@@ -70,7 +70,7 @@ Figma Link: {figma_url}
   "figma_url": "...",
   "screens_count": 3,
   "notes_saved": true,
-  "notes_path": "Skills/feature/IS-534-name/figma-notes.md",
+  "notes_path": "Tasks/feature/IS-534-name/figma-notes.md",
   "gaps_found": ["gap1", "gap2"]
 }
 ```

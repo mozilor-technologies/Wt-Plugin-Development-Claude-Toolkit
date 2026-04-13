@@ -18,7 +18,7 @@ NC='\033[0m'
 
 PLUGIN_DIR="$(pwd)"
 TICKET="${1}"
-STATE_FILE="Skills/feature/${TICKET}/.wt-state"
+STATE_FILE="Tasks/feature/${TICKET}/.wt-state"
 
 # Helper functions
 print_header() {
@@ -117,7 +117,7 @@ case $PHASE in
         print_info "Agent: Building code from plan"
         print_info "Checking: plan.md exists?"
 
-        if [ ! -f "Skills/feature/${TICKET}/plan.md" ]; then
+        if [ ! -f "Tasks/feature/${TICKET}/plan.md" ]; then
             print_error "plan.md not found"
             echo "Run Planning phase first (option 1)"
             exit 1
@@ -161,7 +161,7 @@ case $PHASE in
         print_header "Spawning Commit Agent"
         print_info "Agent: Commit and create PR"
 
-        if [ ! -f "Skills/feature/${TICKET}/.wt-state" ]; then
+        if [ ! -f "Tasks/feature/${TICKET}/.wt-state" ]; then
             print_error "Testing not complete"
             echo "Run Testing phase first (option 3)"
             exit 1

@@ -12,7 +12,7 @@ You are a PRD retrieval agent. Fetch the product requirements for a ticket and s
 ## Input
 
 - `ticket`: Jira ticket number (e.g. IS-534)
-- `feature_folder`: path to save PRD.md (e.g. `Skills/feature/IS-534-feed-filter-manage-page`)
+- `feature_folder`: path to save PRD.md (e.g. `Tasks/feature/IS-534-feed-filter-manage-page`)
 
 ## Steps
 
@@ -77,7 +77,7 @@ Confluence: {url or "N/A"}
 {
   "ticket": "IS-534",
   "prd_saved": true,
-  "prd_path": "Skills/feature/IS-534-name/PRD.md",
+  "prd_path": "Tasks/feature/IS-534-name/PRD.md",
   "confluence_url": "url or null",
   "source": "confluence | jira-description | external-url"
 }

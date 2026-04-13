@@ -170,7 +170,7 @@ your-plugin/
 │   ├── agents/                  ← 9 custom AI agents
 │   ├── skills/                  ← 18 wp-* + context skills
 │   └── scripts/                 ← automation bash scripts
-├── Skills/
+├── Tasks/
 │   └── feature/
 │       └── IS-123-feature-name/
 │           ├── PRD.md
@@ -271,7 +271,7 @@ Run any command inside Claude Code by typing `/command-name`.
 
 | Command | What It Does |
 |---|---|
-| `/wt-feature` | Reads Confluence PRD + Figma design, creates `Skills/feature/IS-{n}/` folder with `PRD.md` and `figma-notes.md` |
+| `/wt-feature` | Reads Confluence PRD + Figma design, creates `Tasks/feature/IS-{n}/` folder with `PRD.md` and `figma-notes.md` |
 | `/wt-plan` | Generates `plan.md` from PRD + codebase research. Uses Opus for architectural thinking |
 | `/wt-design-review` | Pushes plan to Bitbucket for review. Simple changes (score 0–1) get inline approval. Complex changes get a plan review PR |
 | `/wt-implement` | Builds the feature task by task following plan.md. Runs PHPCS after every file |
