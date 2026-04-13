@@ -1,0 +1,110 @@
+{
+  "mcpServers": {
+    "atlassian": {
+      "command": "uvx",
+      "args": [
+        "mcp-atlassian"
+      ],
+      "env": {
+        "CONFLUENCE_URL": "https://mozilor.atlassian.net/wiki",
+        "CONFLUENCE_USERNAME": "your-email@mozilor.com",
+        "CONFLUENCE_API_TOKEN": "YOUR_ATLASSIAN_API_TOKEN",
+        "JIRA_URL": "https://mozilor.atlassian.net/",
+        "JIRA_USERNAME": "your-email@mozilor.com",
+        "JIRA_API_TOKEN": "YOUR_ATLASSIAN_API_TOKEN",
+        "BITBUCKET_URL": "https://bitbucket.org",
+        "BITBUCKET_USERNAME": "your-email@mozilor.com",
+        "BITBUCKET_API_TOKEN": "YOUR_BITBUCKET_API_TOKEN",
+        "BITBUCKET_WORKSPACE": "webtoffee"
+      }
+    },
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@figma/mcp"
+      ],
+      "env": {
+        "FIGMA_ACCESS_TOKEN": "YOUR_FIGMA_ACCESS_TOKEN"
+      }
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/absolute/path/to/plugin/.claude/scripts/context-session-start.sh\" 2>&1"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/absolute/path/to/plugin/.claude/scripts/auto-review.sh\" \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>&1 | head -60"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_TOOL_INPUT_COMMAND\" | grep -q '^git commit' && bash \"/absolute/path/to/plugin/.claude/scripts/pre-commit-review.sh\" 2>&1 || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/absolute/path/to/plugin/.claude/scripts/auto-test.sh\" 2>&1"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Agent(*)",
+      "WebSearch(*)",
+      "WebFetch(*)",
+      "Bash(bash \"/absolute/path/to/plugin/.claude/scripts/*\")",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git add*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git push*)",
+      "Bash(git tag*)",
+      "Bash(composer install*)",
+      "Bash(composer require*)",
+      "Bash(./vendor/bin/phpunit*)",
+      "Bash(./vendor/bin/phpcs*)",
+      "Bash(./vendor/bin/phpcbf*)",
+      "Bash(wp *)",
+      "Bash(ln -s*)",
+      "Bash(mkdir -p*)",
+      "Bash(rsync*)",
+      "Bash(git commit*)",
+      "Bash(cp -r*)",
+      "Bash(rm -rf*)",
+      "Bash(unzip*)",
+      "Bash(zip*)",
+      "Bash(grep*)",
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)"
+    ]
+  }
+}
