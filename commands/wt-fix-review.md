@@ -89,7 +89,28 @@ Leave the comment **unresolved** — it stays open until the reviewer responds.
 
 ---
 
-### Step 6: Show summary to user
+### Step 6: Update plan.md with review fixes
+
+After fixing all CLEAR comments, update `Tasks/feature/{ticket}-{name}/plan.md` (or `Support/{ticket}/plan.md` for support tickets).
+
+Append a `## Review Fixes` section:
+
+```markdown
+## Review Fixes
+
+> Updated after PR code review — {date}
+
+| Comment | File:Line | Issue | Fix Applied |
+|---------|-----------|-------|-------------|
+| "{comment summary}" | file.php:87 | Missing nonce | Added `check_admin_referer()` |
+| "{comment summary}" | file.php:34 | Unescaped output | Replaced `echo` with `esc_html()` |
+```
+
+Then invoke the **context-save-plan** skill to overwrite `.context/plans/` with the updated plan. This ensures future sessions start with the corrected approach and the same mistakes are not repeated.
+
+---
+
+### Step 7: Show summary to user
 
 Before committing anything, display:
 
@@ -115,7 +136,7 @@ Wait for explicit **yes** before committing.
 
 ---
 
-### Step 7: Commit the fixes
+### Step 8: Commit the fixes
 
 If user says yes:
 
@@ -134,7 +155,7 @@ Show message → user approves → commit → push.
 
 ---
 
-### Step 8: Mark resolved comments on Bitbucket
+### Step 9: Mark resolved comments on Bitbucket
 
 Use Atlassian MCP to:
 - Mark each FIXED comment as **resolved** on Bitbucket
@@ -147,7 +168,7 @@ Leave VAGUE comments **open** — they are already waiting for reviewer response
 
 ---
 
-### Step 9: Final summary
+### Step 10: Final summary
 
 ```
 ✅ [X] comments fixed and resolved on Bitbucket

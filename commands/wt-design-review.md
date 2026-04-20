@@ -354,9 +354,13 @@ git push origin plan/{ticket}-{name}
 git checkout feature/{ticket}-{name}
 ```
 
+Then sync the updated plan to `.context/plans/` so future sessions use the revised version:
+Invoke the **context-save-plan** skill to overwrite the saved plan with the updated `plan.md`.
+
 Show:
 ```
 ✅ Updated plan pushed to plan/{ticket}-{name}.
+✅ .context/plans/ updated with revised plan.
 The reviewer will be notified of the new commits.
 Run /wt-design-review again to check for further comments or approval.
 ```
