@@ -251,10 +251,11 @@ Extract PR URL from response: `d['links']['html']['href']`
   Bitbucket → Repository Settings → Access tokens (Read + Write on Repositories & Pull requests)
   Then update `BITBUCKET_API_TOKEN` in `.claude/settings.json`
 
-- Post a comment on the Jira ticket with the PR link using Atlassian MCP:
+- Post a comment on the Jira ticket with the PR and commit link using Atlassian MCP:
   ```
   PR created and ready for review:
-  🔗 {PR URL}
+  🔗 PR: {PR URL}
+  🔗 Commit: https://bitbucket.org/{workspace}/{repo}/commits/{commit_hash}
   Branch: {source branch} → {destination branch}
   ```
 
