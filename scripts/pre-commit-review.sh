@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # pre-commit-review.sh
-# Runs PHPCS on STAGED PHP files only — standard auto-detected from plugin header (Woo: tag → WooCommerce, else WordPress).
+# Runs PHPCS on STAGED PHP files only — standard auto-detected from plugin header (Woo: tag or woocommerce.com/products Plugin URI → WooCommerce, else WordPress).
 # Only reports errors on lines that were actually added/changed in this commit.
 # Exits 1 to BLOCK the commit if new errors are found.
 
@@ -44,9 +44,14 @@ elif [ -n "$COMPOSER_GLOBAL_BIN" ] && [ -f "$COMPOSER_GLOBAL_BIN/phpcbf" ]; then
   PHPCBF="$COMPOSER_GLOBAL_BIN/phpcbf"
 fi
 
-# Detect PHPCS standard from plugin header: Woo: tag = WooCommerce Marketplace, otherwise WordPress.org
+# Detect PHPCS standard from plugin header:
+# 1. Woo: tag present → WooCommerce Marketplace
+# 2. No Woo: tag but Plugin URI contains woocommerce.com/products → WooCommerce Marketplace
+# 3. Otherwise → WordPress.org
 MAIN_PLUGIN_FILE=$(grep -rl "Plugin Name:" --include="*.php" "$PLUGIN_DIR" | head -1)
 if grep -qi "^\s*\*\s*Woo:" "$MAIN_PLUGIN_FILE" 2>/dev/null; then
+  DETECTED_STANDARD="WooCommerce"
+elif grep -qi "^\s*\*\s*Plugin URI:.*woocommerce\.com/products" "$MAIN_PLUGIN_FILE" 2>/dev/null; then
   DETECTED_STANDARD="WooCommerce"
 else
   DETECTED_STANDARD="WordPress"

@@ -158,16 +158,23 @@ WooCommerce products → feed module → column mapping → export/CSV generatio
 
 ## PHPCS Standard Detection
 
-Before running PHPCS, check the main plugin file header for a `Woo:` tag:
+Before running PHPCS, check the main plugin file header using these two signals (in order):
 
+1. Check for a `Woo:` tag:
 ```bash
 grep -i "^\s*\*\s*Woo:" {main-plugin-file}.php
+```
+
+2. If no `Woo:` tag, check the `Plugin URI`:
+```bash
+grep -i "^\s*\*\s*Plugin URI:" {main-plugin-file}.php
 ```
 
 | Result | Plugin Type | Standard to Apply |
 |--------|------------|-------------------|
 | `Woo:` tag found | WooCommerce Marketplace | WooCommerce standard only — 0 errors |
-| `Woo:` tag absent | WordPress.org plugin | WordPress standard only — 0 errors |
+| `Woo:` tag absent + `Plugin URI` contains `woocommerce.com/products` | WooCommerce Marketplace | WooCommerce standard only — 0 errors |
+| `Woo:` tag absent + `Plugin URI` does NOT contain `woocommerce.com/products` | WordPress.org plugin | WordPress standard only — 0 errors |
 
 Never run both standards on the same plugin — apply only the one that matches.
 
