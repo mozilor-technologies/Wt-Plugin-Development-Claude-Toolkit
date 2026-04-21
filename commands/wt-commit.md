@@ -251,6 +251,13 @@ Extract PR URL from response: `d['links']['html']['href']`
   Bitbucket → Repository Settings → Access tokens (Read + Write on Repositories & Pull requests)
   Then update `BITBUCKET_API_TOKEN` in `.claude/settings.json`
 
+- Post a comment on the Jira ticket with the PR link using Atlassian MCP:
+  ```
+  PR created and ready for review:
+  🔗 {PR URL}
+  Branch: {source branch} → {destination branch}
+  ```
+
 - Transition Jira ticket → **Code Review** (transition id: `31`) after PR is created
 
 Show the PR URL to the user.
@@ -266,6 +273,7 @@ Show the PR URL to the user.
 ✅ Committed:  IS-123: feat: add TikTok Shop feed format
 ✅ Pushed:     origin/feature/IS-123-...
 ✅ PR created: https://bitbucket.org/webtoffee/[repo]/pull-requests/[id]
+✅ IS-123 →    Jira comment posted with PR link
 ✅ IS-123 →    Code Review
 ```
 
