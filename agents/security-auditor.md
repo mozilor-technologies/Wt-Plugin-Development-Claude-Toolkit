@@ -20,7 +20,7 @@ You are a WordPress security specialist. Audit the changed files for vulnerabili
 ### 1. Load context
 
 Read:
-- `.context/coding-standards.md` — security requirements section
+- `ai-context/coding-standards.md` — security requirements section
 - Each file in `changed_files`
 
 ### 2. Input validation audit

@@ -21,8 +21,8 @@ You are a QA engineer. Write tests, run them, check observability, and verify al
 
 Read:
 - `{feature_folder}/plan.md` — for acceptance criteria and test scenarios
-- `.context/testing-standards.md`
-- `.context/observability-standards.md`
+- `ai-context/testing-standards.md`
+- `ai-context/observability-standards.md`
 
 ### 2. Write unit tests
 

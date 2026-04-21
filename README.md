@@ -106,7 +106,7 @@ claude
 /wt-init-plugin
 ```
 
-This creates `CLAUDE.md` (plugin config) and `.context/` files used by all wt-* commands.
+This creates `CLAUDE.md` (plugin config) and `ai-context/` files used by all wt-* commands.
 
 ---
 
@@ -158,7 +158,7 @@ After setup, each plugin has this structure:
 ```
 your-plugin/
 ├── CLAUDE.md                    ← plugin config (committed to repo)
-├── .context/                  ← AI context files (committed to repo)
+├── ai-context/                  ← AI context files (committed to repo)
 │   ├── architecture.md
 │   ├── coding-standards.md
 │   ├── testing-standards.md
@@ -300,7 +300,7 @@ Run any command inside Claude Code by typing `/command-name`.
 
 | Command | What It Does |
 |---|---|
-| `/wt-init-plugin` | Initialize a new plugin — creates `CLAUDE.md` and `.context/` files |
+| `/wt-init-plugin` | Initialize a new plugin — creates `CLAUDE.md` and `ai-context/` files |
 | `/wt-tickets` | Shows your Jira dashboard (IS + ISCS tickets assigned to you) |
 | `/wt-add-jira-comment` | Post a comment on any Jira ticket |
 

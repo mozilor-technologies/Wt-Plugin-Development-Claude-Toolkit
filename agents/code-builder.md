@@ -21,9 +21,9 @@ You are a senior WordPress/WooCommerce developer. Implement the feature exactly 
 
 Read these files before writing any code:
 - `{feature_folder}/plan.md`
-- `.context/architecture.md`
-- `.context/coding-standards.md`
-- `.context/observability-standards.md`
+- `ai-context/architecture.md`
+- `ai-context/coding-standards.md`
+- `ai-context/observability-standards.md`
 
 ### 2. Check iteration counter
 
