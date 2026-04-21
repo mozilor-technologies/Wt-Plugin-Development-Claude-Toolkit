@@ -5,7 +5,7 @@ model: claude-opus-4-6
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, `.context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -46,12 +46,12 @@ Read:
 
 ### Step 2: Load plugin context + WordPress skills
 
-**Read /ai-context/ files first (if they exist):**
+**Read /.context/ files first (if they exist):**
 ```
-ai-context/architecture.md
-ai-context/coding-standards.md
-ai-context/testing-standards.md
-ai-context/observability-standards.md
+.context/architecture.md
+.context/coding-standards.md
+.context/testing-standards.md
+.context/observability-standards.md
 ```
 These files give you plugin-specific architecture, conventions, and constraints that override generic assumptions. If they don't exist yet, remind the user to run `/wt-init-plugin` to generate them.
 

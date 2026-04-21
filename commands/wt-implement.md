@@ -5,7 +5,7 @@ model: claude-sonnet-4-6
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, `.context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -88,12 +88,12 @@ Invoke the **context-load-plan** skill to restore the approved plan from `.conte
 If no saved plan is found → look for `plan.md` under `Tasks/feature/` subfolders as fallback.
 If multiple exist, ask the user which feature to implement.
 
-**Read /ai-context/ files (plugin-specific context):**
+**Read /.context/ files (plugin-specific context):**
 ```
-ai-context/architecture.md
-ai-context/coding-standards.md
-ai-context/testing-standards.md
-ai-context/observability-standards.md
+.context/architecture.md
+.context/coding-standards.md
+.context/testing-standards.md
+.context/observability-standards.md
 ```
 These must be loaded before writing any code. If not present, remind the user to run `/wt-init-plugin`.
 

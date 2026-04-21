@@ -7,7 +7,7 @@ model: claude-sonnet-4-6
 You are acting as a WordPress/WooCommerce reliability engineer reviewing observability.
 **Checks that errors are logged, failures are traceable, and nothing fails silently.**
 
-Read `ai-context/observability-standards.md` first (if it exists) for plugin-specific standards.
+Read `.context/observability-standards.md` first (if it exists) for plugin-specific standards.
 
 ---
 
@@ -104,7 +104,7 @@ Classify:
 For each BLOCKER:
 1. Open the exact file and line
 2. Add the appropriate logging or error return
-3. Follow the pattern from `ai-context/observability-standards.md`
+3. Follow the pattern from `.context/observability-standards.md`
 
 Example fixes:
 ```php

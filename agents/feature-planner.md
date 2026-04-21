@@ -23,10 +23,10 @@ You are a senior WordPress/WooCommerce architect. Generate a precise, actionable
 Read these files:
 - `{feature_folder}/PRD.md`
 - `{feature_folder}/figma-notes.md` (if exists)
-- `ai-context/architecture.md`
-- `ai-context/coding-standards.md`
-- `ai-context/testing-standards.md`
-- `ai-context/observability-standards.md`
+- `.context/architecture.md`
+- `.context/coding-standards.md`
+- `.context/testing-standards.md`
+- `.context/observability-standards.md`
 
 Read `code_explorer_output` to understand existing patterns.
 
