@@ -189,7 +189,7 @@ If yes: `git push origin [branch]`
 
 ### Step 9: Auto-create Bitbucket Pull Request
 
-Read credentials from `~/.claude/settings.json → mcpServers.atlassian.env`:
+Read credentials from `.claude/settings.json → mcpServers.atlassian.env`:
 - `BITBUCKET_URL`, `BITBUCKET_USERNAME`, `BITBUCKET_API_TOKEN`, `BITBUCKET_WORKSPACE`
 
 **Authentication:** Basic auth — `username:token` (Repository Access Token, NOT Atlassian API token).
@@ -249,7 +249,7 @@ Extract PR URL from response: `d['links']['html']['href']`
 
 - **If token is rejected** → inform user to generate a Repository Access Token at:
   Bitbucket → Repository Settings → Access tokens (Read + Write on Repositories & Pull requests)
-  Then update `BITBUCKET_API_TOKEN` in `~/.claude/settings.json`
+  Then update `BITBUCKET_API_TOKEN` in `.claude/settings.json`
 
 - Transition Jira ticket → **Code Review** (transition id: `31`) after PR is created
 

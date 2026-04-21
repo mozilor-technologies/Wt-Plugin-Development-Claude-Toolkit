@@ -17,7 +17,7 @@ You are a task complexity router. Your only job is to read a Jira ticket and ret
 
 ### 1. Fetch the ticket
 
-Read credentials from `~/.claude/settings.json → mcpServers.atlassian.env`:
+Read credentials from `.claude/settings.json → mcpServers.atlassian.env`:
 - `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
 
 ```bash

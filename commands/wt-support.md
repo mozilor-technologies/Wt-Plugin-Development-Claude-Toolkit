@@ -46,7 +46,7 @@ Which support ticket? (e.g. ISCS-322)
 
 ### Step 2: Fetch the Jira ticket
 
-Read credentials from `~/.claude/settings.json`:
+Read credentials from `.claude/settings.json`:
 - `mcpServers.atlassian.env.JIRA_URL`
 - `mcpServers.atlassian.env.JIRA_USERNAME`
 - `mcpServers.atlassian.env.JIRA_API_TOKEN`

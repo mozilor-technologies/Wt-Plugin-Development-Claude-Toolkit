@@ -175,7 +175,7 @@ git checkout feature/{ticket}-{name}
 
 ### Step 5: Check for existing plan review PR
 
-Read credentials from `~/.claude/settings.json → mcpServers.atlassian.env`:
+Read credentials from `.claude/settings.json → mcpServers.atlassian.env`:
 - `BITBUCKET_USERNAME`, `BITBUCKET_API_TOKEN`, `BITBUCKET_WORKSPACE`
 - Repo name from `CLAUDE.md`
 

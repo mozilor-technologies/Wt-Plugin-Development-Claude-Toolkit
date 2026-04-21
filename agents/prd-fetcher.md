@@ -18,7 +18,7 @@ You are a PRD retrieval agent. Fetch the product requirements for a ticket and s
 
 ### 1. Fetch Jira ticket
 
-Read credentials from `~/.claude/settings.json → mcpServers.atlassian.env`.
+Read credentials from `.claude/settings.json → mcpServers.atlassian.env`.
 
 ```bash
 curl -s -u "$JIRA_USER:$JIRA_TOKEN" \

@@ -34,7 +34,7 @@ Comment?
 
 ### Step 2: Read Jira credentials
 
-Read from `~/.claude/settings.json`:
+Read from `.claude/settings.json`:
 - `mcpServers.atlassian.env.JIRA_URL`
 - `mcpServers.atlassian.env.JIRA_USERNAME`
 - `mcpServers.atlassian.env.JIRA_API_TOKEN`

@@ -32,7 +32,7 @@ You are acting as a Senior WordPress/WooCommerce product manager.
 ### Step 1: Resolve ticket, PRD link, and feature name
 
 **If a Jira ticket number is provided (e.g. IS-123 or ISCS-322):**
-- Fetch the ticket from Jira REST API using credentials from `~/.claude/settings.json`:
+- Fetch the ticket from Jira REST API using credentials from `.claude/settings.json`:
   ```bash
   curl -s -u "$JIRA_USER:$JIRA_TOKEN" \
     "$JIRA_URL/rest/api/3/issue/{TICKET}?fields=summary,description,attachment"

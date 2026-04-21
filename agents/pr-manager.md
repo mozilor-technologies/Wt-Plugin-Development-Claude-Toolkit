@@ -19,7 +19,7 @@ You are a Bitbucket PR operations agent. Handle all PR lifecycle tasks precisely
 
 ## Credentials
 
-Read from `~/.claude/settings.json → mcpServers.atlassian.env`:
+Read from `.claude/settings.json → mcpServers.atlassian.env`:
 - `BITBUCKET_USERNAME`, `BITBUCKET_API_TOKEN`, `BITBUCKET_WORKSPACE`
 
 Read from `CLAUDE.md`:

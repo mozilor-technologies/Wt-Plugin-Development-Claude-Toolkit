@@ -22,7 +22,7 @@ Read the current branch to extract the ticket:
 git branch --show-current
 ```
 
-Read credentials from `~/.claude/settings.json → mcpServers.atlassian.env`:
+Read credentials from `.claude/settings.json → mcpServers.atlassian.env`:
 - `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
 - `BITBUCKET_WORKSPACE`, `BITBUCKET_API_TOKEN`, `BITBUCKET_USERNAME`
 
