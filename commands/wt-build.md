@@ -25,7 +25,7 @@ Invoke the **wt-feature** skill.
 
 Invoke the **wt-plan** skill.
 
-- Run the full wt-plan flow (read ai-context/ + parallel research sub-agents + generate plan.md)
+- Run the full wt-plan flow (read .context/ + parallel research sub-agents + generate plan.md)
 - Show the plan to the user and ask:
   ```
   Does this plan look right? (yes / change something)
@@ -53,7 +53,7 @@ Invoke the **wt-design-review** skill.
 
 Invoke the **wt-implement** skill.
 
-- Loads ai-context/ + context-load-plan at start (session continuity)
+- Loads .context/ + context-load-plan at start (session continuity)
 - Tracks iteration count (max 5 before human check-in)
 - Run the full wt-implement flow (sub-agents + code all tasks)
 - Once all tasks are marked completed, ask the user:

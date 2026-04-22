@@ -5,7 +5,7 @@ model: claude-haiku-4-5-20251001
 ---
 
 > ⚠️ **STRICT STRUCTURE RULE**
-> `CLAUDE.md`, `Tasks/`, `.context/`, and `ai-context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
+> `CLAUDE.md`, `Tasks/`, and `.context/` must **always** live at the **git repository root** — never inside a plugin subfolder (e.g. never inside `webtoffee-product-feed-pro/`).
 >
 > **Before doing anything, verify we are at the repo root:**
 > ```bash
@@ -111,13 +111,13 @@ claude
 
 ---
 
-## Step: Create /ai-context/ context files
+## Step: Create /.context/ context files
 
-After `CLAUDE.md` is created, generate a `/ai-context/` directory in the repository root with four AI-readable context files. These are read automatically by `/wt-plan` and `/wt-implement` to give Claude accurate, plugin-specific context before generating plans or writing code.
+After `CLAUDE.md` is created, generate context files inside the `.context/` directory in the repository root (create it if it doesn't exist). These are read automatically by `/wt-plan` and `/wt-implement` to give Claude accurate, plugin-specific context before generating plans or writing code.
 
 Create each file using the plugin config the user provided:
 
-**`ai-context/architecture.md`**
+**`.context/architecture.md`**
 ```markdown
 # Architecture: {Plugin Name}
 
@@ -152,7 +152,7 @@ WooCommerce products → feed module → column mapping → export/CSV generatio
 - No deprecated WC hooks
 ```
 
-**`ai-context/coding-standards.md`**
+**`.context/coding-standards.md`**
 ```markdown
 # Coding Standards: {Plugin Name}
 
@@ -204,7 +204,7 @@ Never run both standards on the same plugin — apply only the one that matches.
 All classes, functions, hooks, constants must be prefixed with: {PREFIX}
 ```
 
-**`ai-context/testing-standards.md`**
+**`.context/testing-standards.md`**
 ```markdown
 # Testing Standards: {Plugin Name}
 
@@ -240,7 +240,7 @@ All classes, functions, hooks, constants must be prefixed with: {PREFIX}
 ./vendor/bin/phpunit --coverage-text 2>&1
 ```
 
-**`ai-context/observability-standards.md`**
+**`.context/observability.md`**
 ```markdown
 # Observability Standards: {Plugin Name}
 
@@ -275,11 +275,11 @@ After creating these four files, invoke the **context-init** skill to initialise
 
 Show:
 ```
-✅ /ai-context/ created with 4 context files:
-   ai-context/architecture.md
-   ai-context/coding-standards.md
-   ai-context/testing-standards.md
-   ai-context/observability-standards.md
+✅ .context/ context files created:
+   .context/architecture.md
+   .context/coding-standards.md
+   .context/testing-standards.md
+   .context/observability.md
 
 ✅ .context/ initialised (plan persistence + commit tracing)
 
