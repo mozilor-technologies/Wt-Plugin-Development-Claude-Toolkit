@@ -137,6 +137,45 @@ Return: `{"mode": "merge-plan-pr", "merged": true, "commit": "abc123"}`
 
 ---
 
+## Mode: poll-code-pr-merge
+
+Check whether the code PR has been approved and merged:
+
+```bash
+curl -s -u "$BITBUCKET_USERNAME:$BITBUCKET_API_TOKEN" \
+  "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/$REPO/pullrequests/{pr_id}" \
+| python3 -c "
+import sys,json
+pr=json.load(sys.stdin)
+state=pr.get('state','UNKNOWN')
+participants=pr.get('participants',[])
+approved_by=[p['user']['display_name'] for p in participants if p.get('approved')]
+was_approved=len(approved_by)>0
+print('STATE:',state)
+print('WAS_APPROVED:',was_approved)
+print('APPROVED_BY:',approved_by)
+"
+```
+
+Return:
+```json
+{
+  "mode": "poll-code-pr-merge",
+  "pr_id": 456,
+  "state": "OPEN|MERGED|DECLINED",
+  "was_approved": false,
+  "approved_by": []
+}
+```
+
+**Decision logic:**
+- `OPEN` → keep polling; no action
+- `MERGED` + `was_approved=true` → trigger QA handoff
+- `MERGED` + `was_approved=false` → notify user; do NOT auto-trigger QA handoff
+- `DECLINED` → notify user to fix review comments and re-run `/wt-commit`
+
+---
+
 ## Mode: create-code-pr
 
 Push branch and create the final code PR:

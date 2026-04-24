@@ -311,7 +311,66 @@ Invoke **pr-manager**: `mode = create-code-pr, release_version = {version}`
 
 Transition Jira to Code Review (transition id: 31).
 
-Update state: add `commit`, `current_phase = "done"`
+Save `code_pr_id` and `code_pr_url` to state.
+
+Update state: add `commit`, `current_phase = "code-pr-review"`
+
+---
+
+## Step 8: Code PR Review Monitoring
+
+> Skip if `code-pr-review` in completed_phases.
+
+Show:
+```
+✅ PR: {code_pr_url}
+   IS-123 → Code Review
+
+⏳ Monitoring PR for approval + merge in the background.
+   You can close Claude — QA handoff fires automatically when the PR is approved and merged.
+   ⚠️  The PR must be approved before merge triggers QA handoff.
+
+   Or stay and I will check every 5 minutes.
+```
+
+Set up background merge polling (CronCreate, every 5 min):
+```
+Check code PR merge for {ticket}:
+Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={code_pr_id}, ticket={ticket}, feature_name={feature_name}
+If state=MERGED and was_approved=true → invoke /wt-qa-ticket → update state current_phase=done → cancel cron
+If state=MERGED and was_approved=false → notify user: "⚠️ PR merged without approval — QA handoff skipped. Run /wt-qa-ticket manually." → cancel cron
+If state=DECLINED → notify user: "⚠️ PR was declined. Fix review comments and re-run /wt-commit." → cancel cron
+If state=OPEN → continue polling
+```
+
+**STOP** — wait for merge.
+
+---
+
+## Step 8B: Resume after merge (current_phase = code-pr-review)
+
+When user returns or cron detects merge:
+
+Invoke **pr-manager**: `mode = poll-code-pr-merge, pr_id = {code_pr_id}`
+
+If `state=OPEN` → show: `⏳ PR is still open. Waiting for approval and merge. PR: {code_pr_url}`
+
+If `state=DECLINED` → show:
+```
+⚠️  PR was declined.
+Fix the review comments, then run /wt-fix-review or /wt-commit to create a new PR.
+```
+
+If `state=MERGED` and `was_approved=false` → show:
+```
+⚠️  PR was merged without approval.
+QA handoff requires an approved PR — run /wt-qa-ticket manually when ready.
+```
+
+If `state=MERGED` and `was_approved=true`:
+- Invoke `/wt-qa-ticket` with `pr_id={code_pr_id}, ticket={ticket}, feature_name={feature_name}`
+- Update state: add `code-pr-review`, `current_phase = "done"`
+- Show final summary
 
 ---
 
@@ -324,10 +383,11 @@ Update state: add `commit`, `current_phase = "done"`
 ║  Complexity:  {Simple|Medium|Complex}                ║
 ║  ✅ Research  ✅ Plan  ✅ Design Review               ║
 ║  ✅ Implement ✅ Tests ✅ Security ✅ QA               ║
-║  ✅ PR: {pr_url}                                     ║
-║  ✅ {ticket} → Code Review                           ║
+║  ✅ PR merged: {code_pr_url}                         ║
+║  ✅ QA Ticket: {qa_ticket}                           ║
+║  ✅ {ticket} → QA Testing                            ║
 ╚══════════════════════════════════════════════════════╝
 
-Next: wait for PR review → run /wt-fix-review if needed
-      after merge → say "QA ticket for {ticket}"
+Next: QA tester will test on staging.
+      When QA passes → run /wt-release.
 ```

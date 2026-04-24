@@ -262,10 +262,41 @@ Extract PR URL from response: `d['links']['html']['href']`
 
 - Transition Jira ticket → **Code Review** (transition id: `31`) after PR is created
 
-Show the PR URL to the user.
+**Save code PR state for background monitoring.**
+Write `Tasks/feature/{ticket}-*/.code-pr-state.json`:
+```json
+{
+  "pr_id": 456,
+  "pr_url": "https://bitbucket.org/{workspace}/{repo}/pull-requests/456",
+  "ticket": "IS-123",
+  "feature_name": "tiktok-shop-feed",
+  "release_version": "1.2.5"
+}
+```
 
-> **QA ticket is NOT created here.** It is created separately after the PR is reviewed and merged.
-> Run `/wt-qa-ticket` once the PR review is complete.
+**Set up background merge polling (CronCreate, every 5 min):**
+```
+Check code PR merge for {ticket}:
+Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={pr_id}, ticket={ticket}, feature_name={feature_name}
+If state=MERGED and was_approved=true → invoke /wt-qa-ticket with pr_id={pr_id}, ticket={ticket}, feature_name={feature_name}
+If state=MERGED and was_approved=false → notify: "⚠️ PR {pr_id} was merged without approval — QA handoff skipped. Run /wt-qa-ticket manually."
+If state=DECLINED → notify: "⚠️ PR {pr_id} was declined. Fix review comments and run /wt-commit to create a new PR."
+If state=OPEN → continue polling
+```
+
+Show the PR URL to the user, then:
+
+```
+✅ Committed:  IS-123: feat: add TikTok Shop feed format
+✅ Pushed:     origin/feature/IS-123-...
+✅ PR created: https://bitbucket.org/webtoffee/[repo]/pull-requests/[id]
+✅ IS-123 →    Jira comment posted with PR link
+✅ IS-123 →    Code Review
+
+⏳ Monitoring PR for approval + merge in the background.
+   You can close Claude — QA handoff will trigger automatically when the PR is approved and merged.
+   ⚠️  The PR must be approved before merge will trigger the QA handoff.
+```
 
 ---
 
@@ -277,6 +308,7 @@ Show the PR URL to the user.
 ✅ PR created: https://bitbucket.org/webtoffee/[repo]/pull-requests/[id]
 ✅ IS-123 →    Jira comment posted with PR link
 ✅ IS-123 →    Code Review
+⏳ Watching for PR approval + merge → QA handoff fires automatically
 ```
 
 ---
