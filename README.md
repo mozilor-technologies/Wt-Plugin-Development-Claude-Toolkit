@@ -404,7 +404,7 @@ PRs always target the **release branch**, never master.
 
 ## Updating the Toolkit
 
-When the toolkit is updated (new commands, agents, etc.), each developer re-runs the installer in their plugin:
+When the toolkit is updated (new commands, agents, etc.), each developer take a git-pull inside the toolkit folder and re-runs the installer in their plugin:
 
 ```bash
 cd /path/to/plugin
