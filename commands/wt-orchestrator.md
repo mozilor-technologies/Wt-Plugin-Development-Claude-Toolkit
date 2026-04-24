@@ -326,34 +326,40 @@ Show:
 ✅ PR: {code_pr_url}
    IS-123 → Code Review
 
-⏳ Monitoring PR for approval + merge in the background.
-   You can close Claude — QA handoff fires automatically when the PR is approved and merged.
-   ⚠️  The PR must be approved before merge triggers QA handoff.
+⏳ Monitoring PR for reviewer approval in the background.
+   You can close Claude — the PR will be merged automatically once approved,
+   then QA handoff fires immediately.
 
    Or stay and I will check every 5 minutes.
 ```
 
-Set up background merge polling (CronCreate, every 5 min):
+Set up background approval polling (CronCreate, every 5 min):
 ```
-Check code PR merge for {ticket}:
-Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={code_pr_id}, ticket={ticket}, feature_name={feature_name}
-If state=MERGED and was_approved=true → invoke /wt-qa-ticket → update state current_phase=done → cancel cron
+Check code PR approval for {ticket}:
+Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={code_pr_id}, ticket={ticket}, feature_name={feature_name}, release_version={release_version}
+If state=OPEN and was_approved=true → invoke pr-manager with mode=merge-code-pr, pr_id={code_pr_id}, release_version={release_version} → invoke /wt-qa-ticket → update state current_phase=done → cancel cron
+If state=MERGED and was_approved=true → (merged externally) invoke /wt-qa-ticket → update state current_phase=done → cancel cron
 If state=MERGED and was_approved=false → notify user: "⚠️ PR merged without approval — QA handoff skipped. Run /wt-qa-ticket manually." → cancel cron
 If state=DECLINED → notify user: "⚠️ PR was declined. Fix review comments and re-run /wt-commit." → cancel cron
-If state=OPEN → continue polling
+If state=OPEN and was_approved=false → continue polling
 ```
 
-**STOP** — wait for merge.
+**STOP** — wait for approval.
 
 ---
 
-## Step 8B: Resume after merge (current_phase = code-pr-review)
+## Step 8B: Resume after approval (current_phase = code-pr-review)
 
-When user returns or cron detects merge:
+When user returns or cron fires:
 
 Invoke **pr-manager**: `mode = poll-code-pr-merge, pr_id = {code_pr_id}`
 
-If `state=OPEN` → show: `⏳ PR is still open. Waiting for approval and merge. PR: {code_pr_url}`
+If `state=OPEN` and `was_approved=false` → show: `⏳ Still waiting for reviewer approval. PR: {code_pr_url}`
+
+If `state=OPEN` and `was_approved=true`:
+- Invoke **pr-manager**: `mode = merge-code-pr, pr_id = {code_pr_id}, release_version = {release_version}`
+- Show: `✅ PR approved — auto-merging into release/{release_version}...`
+- Proceed to QA handoff below
 
 If `state=DECLINED` → show:
 ```
@@ -367,7 +373,10 @@ If `state=MERGED` and `was_approved=false` → show:
 QA handoff requires an approved PR — run /wt-qa-ticket manually when ready.
 ```
 
-If `state=MERGED` and `was_approved=true`:
+If `state=MERGED` and `was_approved=true` (merged externally — fallback):
+- Proceed to QA handoff below
+
+**QA handoff (on successful merge):**
 - Invoke `/wt-qa-ticket` with `pr_id={code_pr_id}, ticket={ticket}, feature_name={feature_name}`
 - Update state: add `code-pr-review`, `current_phase = "done"`
 - Show final summary

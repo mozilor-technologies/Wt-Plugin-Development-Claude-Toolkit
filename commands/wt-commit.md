@@ -274,14 +274,15 @@ Write `Tasks/feature/{ticket}-*/.code-pr-state.json`:
 }
 ```
 
-**Set up background merge polling (CronCreate, every 5 min):**
+**Set up background approval polling (CronCreate, every 5 min):**
 ```
-Check code PR merge for {ticket}:
-Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={pr_id}, ticket={ticket}, feature_name={feature_name}
-If state=MERGED and was_approved=true → invoke /wt-qa-ticket with pr_id={pr_id}, ticket={ticket}, feature_name={feature_name}
-If state=MERGED and was_approved=false → notify: "⚠️ PR {pr_id} was merged without approval — QA handoff skipped. Run /wt-qa-ticket manually."
-If state=DECLINED → notify: "⚠️ PR {pr_id} was declined. Fix review comments and run /wt-commit to create a new PR."
-If state=OPEN → continue polling
+Check code PR approval for {ticket}:
+Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={pr_id}, ticket={ticket}, feature_name={feature_name}, release_version={release_version}
+If state=OPEN and was_approved=true → invoke pr-manager with mode=merge-code-pr, pr_id={pr_id}, release_version={release_version} → then invoke /wt-qa-ticket → cancel cron
+If state=MERGED and was_approved=true → (merged externally) invoke /wt-qa-ticket → cancel cron
+If state=MERGED and was_approved=false → notify: "⚠️ PR {pr_id} was merged without approval — QA handoff skipped. Run /wt-qa-ticket manually." → cancel cron
+If state=DECLINED → notify: "⚠️ PR {pr_id} was declined. Fix review comments and run /wt-commit to create a new PR." → cancel cron
+If state=OPEN and was_approved=false → continue polling
 ```
 
 Show the PR URL to the user, then:
@@ -293,9 +294,9 @@ Show the PR URL to the user, then:
 ✅ IS-123 →    Jira comment posted with PR link
 ✅ IS-123 →    Code Review
 
-⏳ Monitoring PR for approval + merge in the background.
-   You can close Claude — QA handoff will trigger automatically when the PR is approved and merged.
-   ⚠️  The PR must be approved before merge will trigger the QA handoff.
+⏳ Monitoring PR for reviewer approval in the background.
+   You can close Claude — the PR will be merged automatically once approved,
+   then QA handoff fires immediately.
 ```
 
 ---
@@ -308,7 +309,7 @@ Show the PR URL to the user, then:
 ✅ PR created: https://bitbucket.org/webtoffee/[repo]/pull-requests/[id]
 ✅ IS-123 →    Jira comment posted with PR link
 ✅ IS-123 →    Code Review
-⏳ Watching for PR approval + merge → QA handoff fires automatically
+⏳ Watching for reviewer approval → auto-merge → QA handoff
 ```
 
 ---

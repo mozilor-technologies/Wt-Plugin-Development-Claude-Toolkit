@@ -139,7 +139,7 @@ Return: `{"mode": "merge-plan-pr", "merged": true, "commit": "abc123"}`
 
 ## Mode: poll-code-pr-merge
 
-Check whether the code PR has been approved and merged:
+Check whether the code PR has been approved (triggers auto-merge) or already merged:
 
 ```bash
 curl -s -u "$BITBUCKET_USERNAME:$BITBUCKET_API_TOKEN" \
@@ -169,10 +169,33 @@ Return:
 ```
 
 **Decision logic:**
-- `OPEN` → keep polling; no action
-- `MERGED` + `was_approved=true` → trigger QA handoff
+- `OPEN` + `was_approved=true` → invoke `merge-code-pr` → then trigger QA handoff
+- `OPEN` + `was_approved=false` → keep polling; no action
+- `MERGED` + `was_approved=true` → PR was merged externally; trigger QA handoff directly
 - `MERGED` + `was_approved=false` → notify user; do NOT auto-trigger QA handoff
 - `DECLINED` → notify user to fix review comments and re-run `/wt-commit`
+
+---
+
+## Mode: merge-code-pr
+
+Auto-merge the approved code PR and pull locally:
+
+```bash
+curl -s -X POST \
+  -u "$BITBUCKET_USERNAME:$BITBUCKET_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "{ticket}: merge approved code PR into release/{release_version}", "close_source_branch": false}' \
+  "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/$REPO/pullrequests/{pr_id}/merge"
+```
+
+Pull the release branch locally to reflect the merge:
+```bash
+git checkout release/{release_version}
+git pull origin release/{release_version}
+```
+
+Return: `{"mode": "merge-code-pr", "merged": true, "commit": "abc123"}`
 
 ---
 
