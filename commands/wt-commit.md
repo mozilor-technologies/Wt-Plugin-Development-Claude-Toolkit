@@ -156,6 +156,14 @@ Ready to commit with this message? (yes / edit / cancel)
 
 ### Step 7: Commit
 
+Ensure `node_modules` and `vendor` are in `.gitignore` before committing:
+
+```bash
+grep -qxF 'node_modules' .gitignore 2>/dev/null || echo 'node_modules' >> .gitignore
+grep -qxF 'vendor' .gitignore 2>/dev/null || echo 'vendor' >> .gitignore
+git add .gitignore
+```
+
 ```bash
 git commit -m "$(cat <<'EOF'
 IS-123: feat: add TikTok Shop feed format
