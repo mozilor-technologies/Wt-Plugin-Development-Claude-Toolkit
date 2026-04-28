@@ -53,7 +53,30 @@ Wait for any missing info before continuing.
 
 ---
 
-### Step 1B: Set up release branch
+### Step 1B: Detect multi-plugin scope
+
+Read `CLAUDE.md` in the current repo:
+- Check `Plugin Type` section for `Type: wrapper` and any entries under `Addon Repos`
+- If `Type: addon` — note the `Core plugin path` (the primary repo is the addon; branching also happens on core)
+
+Also inspect the Jira ticket fields:
+- Labels, components, or description for addon slug names that match entries in `CLAUDE.md → Addon Repos`
+
+Build a **repo list** — the ordered set of repos that need branches for this ticket:
+1. **Primary repo** — always the CWD (where you are now)
+2. **Addon repos** — any `CLAUDE.md → Addon Repos` entries whose slug appears in the ticket body/labels, OR if the ticket has no such signal, ask:
+   ```
+   This is a core plugin with addon repos configured.
+   Does this ticket also require changes in any addon repos?
+   Configured addons: {list slugs from CLAUDE.md}
+   (Enter slugs comma-separated, or press Enter to skip)
+   ```
+
+Store the resolved repo list in memory for use throughout the rest of this command.
+
+---
+
+### Step 1C: Set up release branch
 
 Ask the user:
 ```
@@ -62,8 +85,10 @@ Which release version is this feature targeting? (e.g. 1.2.5)
 
 Format the release branch name as `release/{version}` (e.g. `release/1.2.5`).
 
-**Check if the release branch already exists on the remote:**
+**For each repo in the repo list**, run the following branch setup (starting with the primary repo, then each addon repo):
+
 ```bash
+cd {repo_path}
 git fetch origin
 git branch -r | grep "origin/release/{version}"
 ```
@@ -73,7 +98,7 @@ git branch -r | grep "origin/release/{version}"
 git checkout release/{version} 2>/dev/null || git checkout -b release/{version} origin/release/{version}
 git pull origin release/{version}
 ```
-Show: `✅ release/{version} already exists — pulled latest from origin`
+Show: `✅ [{repo_slug}] release/{version} already exists — pulled latest`
 
 **If the release branch does NOT exist remotely:**
 ```bash
@@ -82,19 +107,42 @@ git pull origin master
 git checkout -b release/{version}
 git push -u origin release/{version}
 ```
-Show: `✅ release/{version} created from master and pushed to origin`
+Show: `✅ [{repo_slug}] release/{version} created from master and pushed`
 
-**Now create the feature branch from the release branch:**
+**Now create the feature branch from the release branch in each repo:**
 ```bash
+cd {repo_path}
 git checkout -b feature/{JIRA-TICKET}-{feature-name}
 ```
-Show: `✅ feature/{JIRA-TICKET}-{feature-name} created from release/{version}`
+Show: `✅ [{repo_slug}] feature/{JIRA-TICKET}-{feature-name} created`
 
-**Save the target release version** to `Tasks/feature/{JIRA-TICKET}-{feature-name}/.release-version`:
+**Save the target release version and repo list** to the primary repo's feature folder:
 ```
-{version}
+Tasks/feature/{JIRA-TICKET}-{feature-name}/.release-version   → {version}
+Tasks/feature/{JIRA-TICKET}-{feature-name}/.repo-list.json    → see format below
 ```
-This is read by `/wt-commit` to set the correct PR destination branch automatically.
+
+`.repo-list.json` format:
+```json
+{
+  "primary": {
+    "slug": "product-feed-xyz",
+    "local_path": "/path/to/product-feed-xyz",
+    "bitbucket_repo": "webtoffee/product-feed-xyz",
+    "prefix": "WTPFX_"
+  },
+  "addons": [
+    {
+      "slug": "wt-addon-subscriptions",
+      "local_path": "/path/to/wt-addon-subscriptions",
+      "bitbucket_repo": "webtoffee/wt-addon-subscriptions",
+      "prefix": "WTADS_"
+    }
+  ]
+}
+```
+
+If the ticket only affects the primary repo, `"addons"` is an empty array `[]`.
 
 > ⚠️ **master is never touched directly.** Release branches are created from master. Feature branches are created from release branches.
 
@@ -115,25 +163,45 @@ Launch the following sub-agents **simultaneously** using the Agent tool:
 - Return: screens, components, field names, interactions, UI flows, gaps vs PRD
 - If no: return "no Figma"
 
-**Sub-agent C — Codebase scan (`code-explorer` agent — haiku, effort: medium):**
-- Scan `includes/` for any existing feature that is similar to this one
+**Sub-agent C — Core plugin codebase scan (`code-explorer` agent — haiku, effort: medium):**
+- Scan `includes/` in the PRIMARY repo for any existing feature similar to this one
 - Look for existing channel classes, feed formats, or admin UI patterns that relate to the Jira ticket topic
 - Return: list of relevant existing files, class names, and patterns found
 
-Wait for all three sub-agents to complete before continuing.
+**Sub-agent D — Addon plugin codebase scan (only if addon repos are in scope):**
+- For each addon repo in `.repo-list.json → addons`, launch a `code-explorer` sub-agent (haiku, effort: medium):
+  - Scan `{addon.local_path}/includes/` for similar patterns
+  - Return: list of relevant existing files, class names, and patterns found in that addon
+- Skip this sub-agent entirely if `.repo-list.json → addons` is empty
+
+Wait for all sub-agents to complete before continuing.
 
 ---
 
-### Step 3: Create the feature folder
+### Step 3: Create the feature folder in each repo
 
-Create the folder:
+Create the feature folder in **every repo in scope** (primary first, then each addon):
+
+**Primary (wrapper) repo:**
 ```
 Tasks/feature/{JIRA-TICKET}-{feature-name}/
 ```
 
-For example:
+**Each addon repo:**
+```bash
+mkdir -p {addon.local_path}/Tasks/feature/{JIRA-TICKET}-{feature-name}/
 ```
-Tasks/feature/IS-123-tiktok-shop-feed/
+
+Copy `.release-version` into each addon repo's feature folder so `/wt-commit` can resolve the PR destination branch when run from that repo:
+```bash
+cp Tasks/feature/{JIRA-TICKET}-{feature-name}/.release-version \
+   {addon.local_path}/Tasks/feature/{JIRA-TICKET}-{feature-name}/.release-version
+```
+
+For example, with two repos in scope:
+```
+/path/to/product-feed-xyz/Tasks/feature/IS-123-tiktok-shop-feed/
+/path/to/wt-addon-subscriptions/Tasks/feature/IS-123-tiktok-shop-feed/
 ```
 
 ---
@@ -219,12 +287,18 @@ Display:
    release/{version}               ← base branch (from master)
    feature/{JIRA-TICKET}-{name}    ← your working branch
 
+Repos in scope for this ticket:
+   [primary]  {primary-slug}       ← {local_path}
+   [addon]    {addon-slug}         ← {local_path}   (if any)
+
 ✅ Feature folder created: Tasks/feature/{JIRA-TICKET}-{feature-name}/
 ✅ PRD.md saved (from Confluence)
 ✅ figma-notes.md saved (from Figma)   ← or "skipped (no Figma)"
+✅ .repo-list.json saved ({N} repo(s) in scope)
 
 Existing related code found:
-[list from Sub-agent C, or "none"]
+  [core]  [list from Sub-agent C, or "none"]
+  [addon] [list from Sub-agent D, or "n/a"]
 
 Gaps found between PRD and design:
 [list any gaps, or "none"]

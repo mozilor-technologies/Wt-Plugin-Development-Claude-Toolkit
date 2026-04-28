@@ -97,6 +97,19 @@ ai-context/observability-standards.md
 ```
 These must be loaded before writing any code. If not present, remind the user to run `/wt-init-plugin`.
 
+**Load the repo map (multi-plugin support):**
+```bash
+cat Tasks/feature/{ticket}-{name}/.repo-list.json 2>/dev/null
+```
+- If the file exists and `addons` is non-empty → this is a **multi-plugin feature**. Each repo has its own `plan.md` at `{repo.local_path}/Tasks/feature/{ticket}-{name}/plan.md`.
+- If absent or empty addons → single-repo mode; one `plan.md` in CWD.
+
+**For multi-plugin features, also read `plan-overview.md`** for the dependency order:
+```bash
+cat Tasks/feature/{ticket}-{name}/plan-overview.md
+```
+Implement repos in the dependency order specified there (wrapper first, then addons).
+
 **Check iteration counter:**
 Read `Tasks/feature/{ticket}-{name}/.claude-iterations` (create with value `0` if missing).
 Increment by 1 and save. If the count reaches **5**:
@@ -151,17 +164,38 @@ Wait for all three sub-agents before starting Task 1.
 
 ---
 
-### Step 4: Work through tasks in plan mode
+### Step 4: Work through repos and tasks in dependency order
 
-For each pending task in dependency order:
+**For each repo in dependency order** (single-repo: just CWD; multi-repo: from `plan-overview.md`):
 
-1. Mark task `in_progress`
-2. **Launch a task-specific `code-explorer` sub-agent (haiku, effort: medium)** to read any files this task touches or extends — get the latest method signatures and hook registrations before writing
-3. Show the user what you are about to write — file name, class name, methods planned
-4. Write the code following ALL rules below
-5. Check auto-review output (PHPCS hook fires automatically on every file save)
-6. Fix any PHPCS errors before moving to the next task
-7. Mark task `completed`
+1. Announce: `▶ Implementing {repo-slug} — {N} tasks`
+
+2. Read that repo's plan file:
+   - Single-repo or wrapper: `Tasks/feature/{ticket}-{name}/plan.md`
+   - Addon repo: `{addon.local_path}/Tasks/feature/{ticket}-{name}/plan.md`
+
+3. **Read ai-context from the current repo:**
+   ```
+   {repo_path}/ai-context/architecture.md
+   {repo_path}/ai-context/coding-standards.md
+   ```
+   Fall back to the wrapper repo's `ai-context/` if absent.
+
+4. For each pending task in that repo's plan, in dependency order:
+
+   a. Mark task `in_progress`
+
+   b. **Launch a task-specific `code-explorer` sub-agent (haiku, effort: medium)** — scan `{repo_path}/includes/` for files this task touches or extends. Return latest method signatures and hook registrations.
+
+   c. Show what you are about to write — file name, class name, methods planned
+
+   d. Write the code following ALL rules below, rooted at `{repo_path}`
+
+   e. Check auto-review output (PHPCS hook fires automatically on every file save)
+
+   f. Fix any PHPCS errors before moving to the next task
+
+   g. Mark task `completed`
 
 ---
 
@@ -201,12 +235,12 @@ For each pending task in dependency order:
 
 ### Step 5: After every 3 tasks
 
-Run the full PHPUnit suite:
+Run the full PHPUnit suite in each repo that had tasks in this batch:
 ```bash
-./vendor/bin/phpunit --testdox 2>&1
+cd {repo_path} && ./vendor/bin/phpunit --testdox 2>&1
 ```
 
-If tests fail — fix before continuing.
+If tests fail in any repo — fix before continuing.
 
 ---
 
@@ -217,11 +251,17 @@ When all tasks are done:
 ✅ All [X] tasks completed.
 
 Files created / modified:
-[list]
+  [core: product-feed-xyz]
+    includes/...
+  [addon: wt-addon-subscriptions]   ← omitted if single-repo
+    includes/...
+
+Repos touched: {list of slugs}
 
 Next steps:
 1. Test in browser (Local Sites — already live via symlink)
-2. Run /wt-test  → generate + run unit tests
-3. Run /wt-review → full code audit
+2. Run /wt-test  → generate + run unit tests (runs in each repo)
+3. Run /wt-review → full code audit (runs in each repo)
 4. Run /wt-qa    → all gates must pass before committing
+5. Run /wt-commit → commits and creates PRs in all repos
 ```

@@ -14,16 +14,24 @@ You are a senior WordPress/WooCommerce developer. Implement the feature exactly 
 - `ticket`: Jira ticket number
 - `feature_folder`: path to feature folder (contains plan.md)
 - `phpcs_path`: path to phpcs binary (e.g. `vendor/bin/phpcs`)
+- `working_directory`: absolute path to the repo to work in for this invocation (defaults to CWD if absent)
+- `repo_slug`: slug of the repo being implemented — used in log output only (e.g. `product-feed-xyz`)
 
 ## Steps
 
 ### 1. Load context
 
+Resolve the working directory:
+- If `working_directory` is provided → all file reads/writes and shell commands use that path as the root
+- If absent → use the current working directory
+
 Read these files before writing any code:
 - `{feature_folder}/plan.md`
-- `ai-context/architecture.md`
-- `ai-context/coding-standards.md`
-- `ai-context/observability-standards.md`
+- `{working_directory}/ai-context/architecture.md`   ← read from the TARGET repo, not the primary
+- `{working_directory}/ai-context/coding-standards.md`
+- `{working_directory}/ai-context/observability-standards.md`
+
+If `ai-context/` is absent in `working_directory` (addon repos may not have it yet), fall back to reading `ai-context/` from the primary repo (the directory where `/wt-implement` was launched).
 
 ### 2. Check iteration counter
 
@@ -41,11 +49,11 @@ Wait for user response before continuing.
 
 ### 3. Implement each task from plan.md
 
-For each task in order:
+Only implement tasks whose `Plugin:` field matches `repo_slug` (or tasks with no `Plugin:` field in single-repo mode). Skip all other tasks — they belong to a different repo's `code-builder` invocation.
 
 **Before writing any file:**
 - Re-read the relevant section of plan.md
-- Check if a similar file already exists (don't duplicate)
+- Check if a similar file already exists in `{working_directory}` (don't duplicate)
 - If WebSearch is needed for a specific WordPress API → search once, use the result
 
 **Coding standards (non-negotiable):**
@@ -53,7 +61,7 @@ For each task in order:
 - Tabs for indentation (never spaces)
 - Yoda conditions: `if ( 'value' === $variable )`
 - Space inside parentheses: `if ( $condition )`
-- Prefix ALL classes, functions, hooks, constants with `WT_PRODUCT_FEED_PRO_`
+- Read prefix from `{working_directory}/CLAUDE.md` → `Plugin prefix` field — use that repo's prefix, not the primary repo's prefix
 - DocBlocks on every class and public method
 - Single quotes for strings unless interpolation needed
 - Sanitize ALL inputs: `sanitize_text_field()`, `absint()`, etc.
@@ -61,10 +69,11 @@ For each task in order:
 - Nonces on ALL forms and AJAX handlers
 - Capability checks on ALL admin actions: `current_user_can()`
 - ALL DB queries use `$wpdb->prepare()`
-- Log errors: `wc_get_logger()->error( $message, array( 'source' => 'product-feed-sync-manager-pro' ) )`
+- Log errors: `wc_get_logger()->error( $message, array( 'source' => '{repo_slug}' ) )`
 
-**After writing each PHP file → run PHPCS:**
+**After writing each PHP file → run PHPCS in the working directory:**
 ```bash
+cd {working_directory}
 # Detect plugin type: Woo: header = WooCommerce Marketplace, otherwise WordPress.org
 MAIN_PLUGIN_FILE=$(grep -rl "Plugin Name:" --include="*.php" . | head -1)
 if grep -qi "^\s*\*\s*Woo:" "$MAIN_PLUGIN_FILE" 2>/dev/null; then
@@ -97,7 +106,10 @@ phpcs_status: clean
 ```json
 {
   "ticket": "IS-534",
-  "tasks_completed": 6,
+  "repo_slug": "product-feed-xyz",
+  "working_directory": "/path/to/product-feed-xyz",
+  "tasks_completed": 4,
+  "tasks_skipped": 2,
   "files_created": ["admin/modules/name/name.php", "..."],
   "files_modified": ["admin/class-hooks.php"],
   "phpcs_status": "clean",

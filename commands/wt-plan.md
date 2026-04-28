@@ -41,6 +41,9 @@ Which feature do you want to plan?
 Read:
 - `Tasks/feature/{ticket}-{name}/PRD.md`
 - `Tasks/feature/{ticket}-{name}/figma-notes.md` (if exists)
+- `Tasks/feature/{ticket}-{name}/.repo-list.json` (if exists — used to group tasks by plugin)
+
+If `.repo-list.json` exists and contains addon entries, this is a **multi-plugin feature**. Each repo gets its own `plan.md` saved in its own `Tasks/feature/{ticket}-{name}/` folder — no `Plugin:` tags needed.
 
 ---
 
@@ -73,17 +76,17 @@ Then check PRD.md for additional skill requirements:
 
 Launch the following sub-agents **simultaneously** using the Agent tool to research the codebase before planning:
 
-**Sub-agent A — Existing class map (`code-explorer` agent — haiku, effort: medium):**
-- Scan `includes/` and list all existing classes, their file paths, and their primary responsibility
+**Sub-agent A — Existing class map in primary repo (`code-explorer` agent — haiku, effort: medium):**
+- Scan `includes/` in the primary repo and list all existing classes, their file paths, and their primary responsibility
 - Identify which classes are most relevant to this feature
 - Return: structured list of `ClassName → file path → purpose`
 
-**Sub-agent B — Hook & filter inventory (`code-explorer` agent — haiku, effort: medium):**
-- Scan `includes/` for all `add_action`, `add_filter`, `do_action`, `apply_filters` calls
+**Sub-agent B — Hook & filter inventory in primary repo (`code-explorer` agent — haiku, effort: medium):**
+- Scan `includes/` in the primary repo for all `add_action`, `add_filter`, `do_action`, `apply_filters` calls
 - Return: list of all registered hooks and filters already in use
 
-**Sub-agent C — Similar feature patterns (`code-explorer` agent — haiku, effort: medium):**
-- Based on the PRD topic, find the most similar existing feature in `includes/`
+**Sub-agent C — Similar feature patterns in primary repo (`code-explorer` agent — haiku, effort: medium):**
+- Based on the PRD topic, find the most similar existing feature in `includes/` of the primary repo
 - Read that implementation in detail — class structure, method signatures, hook usage
 - Return: the pattern to follow for the new feature (with file references)
 
@@ -91,76 +94,131 @@ Launch the following sub-agents **simultaneously** using the Agent tool to resea
 - Use the Atlassian MCP to fetch the Jira ticket from the PRD
 - Return: ticket title, description, acceptance criteria, linked tickets
 
-Wait for all four sub-agents to complete before writing the plan.
+**Sub-agents E+ — Addon repo scans (only if `.repo-list.json` has addon entries):**
+- For each addon repo, launch a `code-explorer` sub-agent (haiku, effort: medium):
+  - Scan `{addon.local_path}/includes/` for class map and hook inventory
+  - Return: structured list of `ClassName → file path → purpose` for that addon
+
+Wait for all sub-agents to complete before writing the plan.
 
 ---
 
-### Step 4: Generate plan.md (Opus — effort: high)
+### Step 4: Generate per-repo plan files (Opus — effort: high)
 
-> This step runs on **claude-opus-4-6** (set in skill frontmatter). Deep architectural reasoning — takes all research from sub-agents and synthesizes a precise, developer-ready plan.
+> This step runs on **claude-opus-4-6** (set in skill frontmatter). Deep architectural reasoning — synthesizes research from all sub-agents into one plan per repo.
 
-Write `Tasks/feature/{ticket}-{name}/plan.md` using this structure:
+#### 4a — Single-repo
+
+Write one file: `Tasks/feature/{ticket}-{name}/plan.md` (standard structure, no changes needed).
+
+#### 4b — Multi-repo
+
+Write **one `plan.md` per repo in scope**, each saved in that repo's own feature folder:
+
+| Repo | Plan file path |
+|---|---|
+| product-feed-xyz (wrapper) | `Tasks/feature/{ticket}-{name}/plan.md` |
+| wt-addon-subscriptions | `{addon.local_path}/Tasks/feature/{ticket}-{name}/plan.md` |
+
+Each plan file contains **only the tasks for that repo** — no `Plugin:` tag needed (the file's location makes the repo implicit).
+
+**Also write** `Tasks/feature/{ticket}-{name}/plan-overview.md` in the wrapper repo as a cross-repo coordination document:
 
 ```markdown
-# Plan: [Feature Name]
+# Plan Overview: [Feature Name]
 Jira: IS-123
 Generated: [date]
+Repos in scope: product-feed-xyz, wt-addon-subscriptions
 
-## Architecture Overview
-[How this feature fits into the plugin architecture]
-[Which existing classes are touched — from Sub-agent A]
-[Which new classes are needed]
+## Cross-repo Architecture
+[How the feature spans repos — integration points, shared hooks, data contracts]
 
-## Existing Patterns to Follow
-[From Sub-agent C — the similar feature to model this after]
+## Dependency Order
+1. product-feed-xyz — Tasks 1–3 must be complete before addon work begins
+2. wt-addon-subscriptions — Tasks 4–5 depend on hooks added in step 1
 
-## File Structure
-[List every file to create or modify]
+## Per-repo Plan Files
+- Wrapper: Tasks/feature/{ticket}-{name}/plan.md
+- Addon (wt-addon-subscriptions): {addon.local_path}/Tasks/feature/{ticket}-{name}/plan.md
+
+## Shared Integration Points
+[Hooks the wrapper exposes that the addon consumes, option keys, REST routes, etc.]
+```
+
+**Per-repo `plan.md` structure** (used for both wrapper and each addon):
+
+```markdown
+# Plan: [Feature Name] — [{repo-slug}]
+Jira: IS-123
+Repo: {repo-slug}
+Generated: [date]
+
+## Summary
+[What this repo's portion of the feature does]
+
+## Architecture Decisions
+[Class structure, hook strategy, data storage decisions for this repo only]
+
+## Files to Create
+| File | Class | Purpose |
+|---|---|---|
+| includes/[path]/class-[name].php | PREFIX_Class_Name | description |
+
+## Files to Modify
+| File | Change |
+|---|---|
+| admin/class-hooks.php | description |
 
 ## Implementation Tasks
-[Ordered by dependency — each task is one atomic unit]
 
 ### Task 1: [name]
-- File: includes/[path]/class-[name].php
-- What: [description]
-- Hooks: [WordPress/WooCommerce hooks needed — from Sub-agent B]
-- Security: [sanitization, escaping, nonces needed]
+- File: `includes/[path]/class-[name].php`
+- Class: `PREFIX_Class_Name`
+- What: [precise description]
+- Key logic: [specific implementation notes]
+- Reuse: [which existing class/pattern to base this on]
 - Depends on: none
 
 ### Task 2: [name]
 ...
 
-## WooCommerce Integration Points
-[Exact hook names, filter names, WC classes used]
-
-## Admin UI
-[Settings API pages, meta boxes, columns — matching Figma design]
+## Hooks & Filters
+| Hook | Type | Purpose |
+|---|---|---|
+| prefix_{name} | filter | description |
 
 ## Database Changes
 [New tables, meta keys, options — or "none"]
 
-## Security Checklist
-[ ] All inputs sanitized with sanitize_*()
-[ ] All outputs escaped with esc_*()
-[ ] Nonces on all form submissions
-[ ] Capability checks on all admin actions
-[ ] $wpdb->prepare() on all queries
+## Tests to Write
+| Class | Method | Scenarios |
+|---|---|---|
+| PREFIX_Class_Name | method | happy path, empty, null, WC edge cases |
 
-## Testing Strategy
-[What unit tests are needed, what to mock]
+## Security Checklist
+- [ ] All inputs sanitized
+- [ ] All outputs escaped
+- [ ] Nonces on all forms/AJAX
+- [ ] Capability checks on admin actions
+- [ ] All DB queries use $wpdb->prepare()
 ```
 
 ---
 
-### Step 5: Show plan to user
+### Step 5: Show plans to user
 
-Display the full `plan.md` content and ask:
+**Single-repo:** display `plan.md` and ask:
 ```
 Does this plan look right? (yes / change something)
 ```
 
-If they want changes — update `plan.md` and show again.
-Repeat until confirmed.
+**Multi-repo:** display `plan-overview.md` first (cross-repo architecture), then each per-repo `plan.md` in order (wrapper first, then addons). Ask once after showing all:
+```
+Do all per-repo plans look right? (yes / change something — specify which repo)
+```
+
+If changes requested — update the relevant plan file and show again.
+Repeat until all plans are confirmed.
 
 ---
 
@@ -178,16 +236,17 @@ git branch --show-current
    If not → create and switch:
 ```bash
 git checkout -b feature/IS-{ticket}-{feature-name}
-# e.g. git checkout -b feature/IS-123-tiktok-shop-feed
 ```
 
 - Branch name must follow: `feature/IS-{ticket}-{description}` for features, `fix/ISCS-{ticket}-{description}` for support
 - If branch creation fails (already exists remotely) → `git checkout feature/IS-{ticket}-{feature-name}`
 
-3. Save the plan for session persistence and commit tracing:
-   Invoke the **context-save-plan** skill — this saves the approved plan to `.context/plans/` so it survives session resets and links future commits back to this plan.
+3. Save plans for session persistence and commit tracing:
+   Invoke the **context-save-plan** skill for each plan file — saves all plans to `.context/plans/` so they survive session resets and link future commits back to this plan set.
 
 4. Confirm and show next step:
+
+**Single-repo:**
 ```
 ✅ Plan approved and saved to Tasks/feature/IS-123-name/plan.md
 ✅ Plan saved to .context/plans/ (session-persistent, commit-traceable)
@@ -196,4 +255,18 @@ git checkout -b feature/IS-{ticket}-{feature-name}
 
 Next step: Run /wt-design-review to push the plan to Bitbucket for approval.
 ⚠️  /wt-implement is blocked until the plan is approved by a reviewer.
+```
+
+**Multi-repo:**
+```
+✅ Plans approved and saved:
+   Tasks/feature/IS-123-name/plan-overview.md   ← cross-repo architecture
+   Tasks/feature/IS-123-name/plan.md            ← product-feed-xyz ([N] tasks)
+   {addon_path}/Tasks/feature/IS-123-name/plan.md ← wt-addon-subscriptions ([N] tasks)
+✅ All plans saved to .context/plans/
+✅ Branch ready in all repos: feature/IS-123-tiktok-shop-feed
+[X] total tasks across [N] repos — ready for design review.
+
+Next step: Run /wt-design-review to push the plans to Bitbucket for approval.
+⚠️  /wt-implement is blocked until the plans are approved by a reviewer.
 ```

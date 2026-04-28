@@ -28,7 +28,7 @@ You are acting as a senior developer preparing a production-quality git commit.
 
 ---
 
-### Step 1: Verify branch
+### Step 1: Verify branch and load repo map
 
 ```bash
 git branch --show-current
@@ -59,20 +59,28 @@ cat Tasks/feature/${TICKET}-*/.release-version 2>/dev/null || cat Tasks/feature/
 
 > ⚠️ PR destination is always a `release/x.x.x` branch — never `master`.
 
+**Load the repo map (multi-plugin support):**
+```bash
+cat Tasks/feature/${TICKET}-*/.repo-list.json 2>/dev/null
+```
+
+- If the file exists and has addon entries → this commit will create PRs in **multiple repos**. Keep the repo map in memory.
+- If absent or empty addons → single-repo commit; proceed as normal.
+
+**For multi-plugin tickets, Steps 2–9 run once for each repo in the repo map (primary first, then each addon in order).** The branch name is identical across all repos. The commit message is identical. The PR destination (`release/{version}`) is identical.
+
 ---
 
 ### Step 2: Show what will be committed
 
-Launch a sub-agent (general-purpose, model: claude-haiku-4-5-20251001) to run the following in parallel and return results:
+For each repo in scope, launch a sub-agent (general-purpose, haiku) to run:
 ```bash
-git status
-git diff --staged
-git diff
+cd {repo_path} && git status && git diff --staged && git diff
 ```
 
-Display all results to the user.
-If nothing is staged, show `git status` and ask which files to stage.
-**Wait for the user to confirm they have reviewed the diff before continuing.**
+Display results grouped by repo slug. If nothing is staged in a repo, show its `git status` and ask which files to stage (or whether to skip that repo).
+
+**Wait for the user to confirm they have reviewed all diffs before continuing.**
 
 ---
 
@@ -271,7 +279,8 @@ Extract PR URL from response: `d['links']['html']['href']`
 - Transition Jira ticket → **Code Review** (transition id: `31`) after PR is created
 
 **Save code PR state for background monitoring.**
-Write `Tasks/feature/{ticket}-*/.code-pr-state.json`:
+
+For single-repo tickets, write `Tasks/feature/{ticket}-*/.code-pr-state.json`:
 ```json
 {
   "pr_id": 456,
@@ -282,28 +291,63 @@ Write `Tasks/feature/{ticket}-*/.code-pr-state.json`:
 }
 ```
 
+For multi-repo tickets, write `Tasks/feature/{ticket}-*/.code-pr-state.json` with all PRs:
+```json
+{
+  "ticket": "IS-123",
+  "feature_name": "tiktok-shop-feed",
+  "release_version": "1.2.5",
+  "prs": [
+    {
+      "repo_slug": "product-feed-xyz",
+      "pr_id": 456,
+      "pr_url": "https://bitbucket.org/webtoffee/product-feed-xyz/pull-requests/456"
+    },
+    {
+      "repo_slug": "wt-addon-subscriptions",
+      "pr_id": 78,
+      "pr_url": "https://bitbucket.org/webtoffee/wt-addon-subscriptions/pull-requests/78"
+    }
+  ]
+}
+```
+
+**Post a single Jira comment listing all PRs** (using Atlassian MCP):
+```
+PRs created and ready for review:
+
+[Core PR — product-feed-xyz|{pr_url_1}]
+[Addon PR — wt-addon-subscriptions|{pr_url_2}]   ← omit if single-repo
+
+Branch: feature/IS-123-... → release/1.2.5
+```
+
 **Set up background approval polling (CronCreate, every 5 min):**
 ```
 Check code PR approval for {ticket}:
-Invoke pr-manager agent with mode=poll-code-pr-merge, pr_id={pr_id}, ticket={ticket}, feature_name={feature_name}, release_version={release_version}
-If state=OPEN and was_approved=true → invoke pr-manager with mode=merge-code-pr, pr_id={pr_id}, release_version={release_version} → then invoke /wt-qa-ticket → cancel cron
-If state=MERGED and was_approved=true → (merged externally) invoke /wt-qa-ticket → cancel cron
-If state=MERGED and was_approved=false → notify: "⚠️ PR {pr_id} was merged without approval — QA handoff skipped. Run /wt-qa-ticket manually." → cancel cron
-If state=DECLINED → notify: "⚠️ PR {pr_id} was declined. Fix review comments and run /wt-commit to create a new PR." → cancel cron
-If state=OPEN and was_approved=false → continue polling
+Invoke pr-manager agent with mode=poll-code-pr-merge, pr_state_file=Tasks/feature/{ticket}-*/.code-pr-state.json
+  - Poll ALL pr_ids in the prs array
+  - ALL PRs must be approved before merge proceeds (multi-repo: all or nothing)
+  - If all PRs approved → merge each in order (primary first), then invoke /wt-qa-ticket → cancel cron
+  - If any PR DECLINED → notify user, cancel cron
+  - If any PR still OPEN → continue polling
 ```
 
-Show the PR URL to the user, then:
+Show the PR URLs to the user, then:
 
 ```
 ✅ Committed:  IS-123: feat: add TikTok Shop feed format
-✅ Pushed:     origin/feature/IS-123-...
-✅ PR created: https://bitbucket.org/webtoffee/[repo]/pull-requests/[id]
-✅ IS-123 →    Jira comment posted with PR link
+
+PRs created:
+  [product-feed-xyz]        https://bitbucket.org/webtoffee/product-feed-xyz/pull-requests/456
+  [wt-addon-subscriptions]  https://bitbucket.org/webtoffee/wt-addon-subscriptions/pull-requests/78
+
+✅ IS-123 →    Jira comment posted with all PR links
 ✅ IS-123 →    Code Review
 
-⏳ Monitoring PR for reviewer approval in the background.
-   You can close Claude — the PR will be merged automatically once approved,
+⏳ Monitoring all PRs for reviewer approval in the background.
+   All PRs must be approved before any is merged.
+   You can close Claude — the PRs will be merged automatically once all are approved,
    then QA handoff fires immediately.
 ```
 
@@ -313,11 +357,13 @@ Show the PR URL to the user, then:
 
 ```
 ✅ Committed:  IS-123: feat: add TikTok Shop feed format
-✅ Pushed:     origin/feature/IS-123-...
-✅ PR created: https://bitbucket.org/webtoffee/[repo]/pull-requests/[id]
-✅ IS-123 →    Jira comment posted with PR link
+✅ Pushed:     origin/feature/IS-123-... (all repos)
+✅ PRs created:
+     product-feed-xyz        → pull-requests/456
+     wt-addon-subscriptions  → pull-requests/78   ← omitted if single-repo
+✅ IS-123 →    Jira comment posted with all PR links
 ✅ IS-123 →    Code Review
-⏳ Watching for reviewer approval → auto-merge → QA handoff
+⏳ Watching all PRs for reviewer approval → auto-merge → QA handoff
 ```
 
 ---

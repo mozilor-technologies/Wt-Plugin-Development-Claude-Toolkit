@@ -64,6 +64,24 @@ Plugin Slug (e.g., product-feed-xyz):
 Plugin Code Prefix (e.g., WTPFX_):
   → Used for constants, function prefixes, text domains
 
+Plugin Type (wrapper / addon / standalone):
+  → wrapper    — standalone plugin that may have addons
+  → addon      — extends a wrapper plugin (e.g. a premium add-on)
+  → standalone — independent plugin with no addon relationship
+
+[If type = addon]
+Wrapper Plugin Slug (e.g., woocommerce-payments):
+  → Slug of the wrapper plugin this addon extends
+
+Wrapper Plugin Local Path (e.g., ~/Local Sites/my-site/.../plugins/woocommerce-payments):
+  → Absolute path to the wrapper plugin repo on this machine
+
+[If type = wrapper]
+Addon Repos (optional — comma-separated slugs, or press Enter to skip):
+  → Known addon plugins that share JIRA tickets with this core plugin
+  → e.g. wt-addon-subscriptions, wt-addon-bookings
+  → For each addon slug you provide, you will also be asked for its local path and Bitbucket repo
+
 Jira Project Key for Features (e.g., IS):
   → Feature tickets come from here
 
@@ -301,6 +319,20 @@ A `CLAUDE.md` file in your repository root with:
 - Plugin prefix: WTPFX_
 - Min WP: 6.0 | Min WC: 8.0
 - Text domain: product-feed-xyz
+
+## Plugin Type
+- Type: wrapper
+# --- For addon plugins, replace "wrapper" above with "addon" and add:
+# - Wrapper plugin slug: woocommerce-payments
+# - Wrapper plugin path: ~/Local Sites/my-site/.../plugins/woocommerce-payments
+
+## Addon Repos
+# List every addon plugin that shares JIRA tickets with this core plugin.
+# Leave empty if none. wt-implement reads this to resolve per-task plugin: tags.
+# - slug: wt-addon-subscriptions
+#   local_path: ~/Local Sites/my-site/.../plugins/wt-addon-subscriptions
+#   bitbucket_repo: webtoffee/wt-addon-subscriptions
+#   prefix: WTADS_
 
 ## Jira
 - Feature project: IS
