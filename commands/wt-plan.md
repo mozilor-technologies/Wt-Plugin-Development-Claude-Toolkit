@@ -156,6 +156,25 @@ Generated: [date]
 ## Summary
 [What this repo's portion of the feature does]
 
+## Wrapper Integration
+<!-- Include this section ONLY when this repo is an addon. Omit entirely for the wrapper repo. -->
+Wrapper repo: {wrapper-slug}
+Wrapper plan: {wrapper_repo_path}/Tasks/feature/{ticket}-{name}/plan.md
+Overview: Tasks/feature/{ticket}-{name}/plan-overview.md
+
+Wrapper tasks this addon depends on:
+- Task {N} in {wrapper-slug}: {task name} — must complete before this addon's Task 1
+
+Hooks/filters this addon consumes from the wrapper:
+| Hook | Type | Provided by | What this addon does with it |
+|---|---|---|---|
+| wt_{name} | action | {wrapper-slug} | [how this addon hooks in] |
+
+Shared option keys / data contracts:
+| Key | Owner | This addon reads/writes |
+|---|---|---|
+| wt_{option_key} | {wrapper-slug} | reads to determine X |
+
 ## Architecture Decisions
 [Class structure, hook strategy, data storage decisions for this repo only]
 
