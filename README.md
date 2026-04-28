@@ -13,7 +13,8 @@ A local Claude Code toolkit for developing WebToffee WordPress/WooCommerce plugi
 - [Credentials Configuration](#credentials-configuration)
 - [Folder Structure](#folder-structure)
 - [Complete Workflow](#complete-workflow)
-  - [New Feature](#new-feature-workflow)
+  - [New Feature (single repo)](#new-feature-workflow)
+  - [New Feature (wrapper + addon)](#multi-repo-wrapper--addon-workflow)
   - [Support Ticket (Bug Fix)](#support-ticket-workflow)
   - [Release](#release-workflow)
 - [Slash Commands Reference](#slash-commands-reference)
@@ -106,6 +107,16 @@ claude
 /wt-init-plugin
 ```
 
+The command asks for a **plugin type**:
+
+| Type | Use when... |
+|---|---|
+| `wrapper` | This is a standalone plugin that may have addon plugins extending it |
+| `addon` | This plugin extends a wrapper plugin (e.g. a premium add-on) |
+| `standalone` | Independent plugin with no addon relationship |
+
+For `wrapper` plugins, you can register known addon repos in `CLAUDE.md`. The workflow then automatically branches, plans, implements, commits, and creates PRs across all repos for a single Jira ticket — see [Multi-repo Workflow](#multi-repo-wrapper--addon-workflow).
+
 This creates `CLAUDE.md` (plugin config) and `ai-context/` files used by all wt-* commands.
 
 ---
@@ -166,19 +177,35 @@ your-plugin/
 ├── .claude/                     ← LOCAL ONLY — gitignored
 │   ├── settings.json            ← your credentials + hooks
 │   ├── settings.json.example    ← template (no credentials)
-│   ├── commands/                ← 19 wt-* slash commands
-│   ├── agents/                  ← 9 custom AI agents
-│   ├── skills/                  ← 19 wp-* + context skills
+│   ├── commands/                ← wt-* slash commands
+│   ├── agents/                  ← custom AI agents
+│   ├── skills/                  ← wp-* + context skills
 │   └── scripts/                 ← automation bash scripts
 ├── Tasks/
 │   └── feature/
 │       └── IS-123-feature-name/
 │           ├── PRD.md
 │           ├── figma-notes.md
-│           └── plan.md
+│           ├── plan.md               ← this repo's implementation tasks
+│           ├── plan-overview.md      ← cross-repo architecture (multi-repo only)
+│           ├── .release-version      ← target release branch
+│           └── .repo-list.json       ← repos in scope (multi-repo only)
 ├── .context/
 │   └── plans/                   ← session-persistent plan files
 └── webtoffee-product-feed/      ← actual plugin code
+```
+
+For **multi-repo tickets**, each addon repo gets a matching feature folder:
+
+```
+wt-addon-subscriptions/          ← addon repo (separate git repo)
+└── Tasks/
+    └── feature/
+        └── IS-123-feature-name/
+            ├── plan.md               ← addon's own tasks only
+            │   └── (includes ## Wrapper Integration section
+            │       linking back to wrapper plan + shared hooks)
+            └── .release-version      ← copied from wrapper repo
 ```
 
 ---
@@ -190,9 +217,9 @@ your-plugin/
 ```
 Jira ticket created
        ↓
-/wt-feature      ← reads PRD from Confluence + Figma design
+/wt-feature      ← reads PRD from Confluence + Figma; creates Tasks/ folder + branches
        ↓
-/wt-plan         ← generates implementation plan
+/wt-plan         ← generates plan.md from PRD + codebase research (Opus)
        ↓
 /wt-design-review ← pushes plan to Bitbucket for approval
        ↓         (reviewer approves on Bitbucket)
@@ -221,6 +248,60 @@ Or run the entire pipeline automatically:
 ```bash
 /wt-build IS-123
 ```
+
+---
+
+### Multi-repo (Wrapper + Addon) Workflow
+
+When a single Jira ticket requires changes in both a wrapper plugin and one or more addon plugins, the workflow handles all repos automatically — same commands, no extra steps.
+
+**Setup (once per plugin pair):**
+Register addon repos in the wrapper plugin's `CLAUDE.md`:
+```markdown
+## Plugin Type
+- Type: wrapper
+
+## Addon Repos
+- slug: wt-addon-subscriptions
+  local_path: ~/Local Sites/.../plugins/wt-addon-subscriptions
+  bitbucket_repo: webtoffee/wt-addon-subscriptions
+  prefix: WTADS_
+```
+
+**Per-ticket flow:**
+```
+Jira ticket created (IS-123)
+       ↓
+/wt-feature      ← detects addon repos from CLAUDE.md + ticket signals
+                   creates Tasks/ folder + release/feature branches in ALL repos
+                   saves .repo-list.json listing every repo in scope
+       ↓
+/wt-plan         ← generates per-repo plan files:
+                     Tasks/feature/IS-123-name/plan-overview.md   (cross-repo architecture)
+                     Tasks/feature/IS-123-name/plan.md            (wrapper tasks)
+                     {addon}/Tasks/feature/IS-123-name/plan.md    (addon tasks + wrapper integration)
+       ↓
+/wt-design-review ← approval gates all plans
+       ↓
+/wt-implement    ← reads plan-overview.md for dependency order
+                   implements wrapper plan first, then each addon plan
+                   switches working directory per-repo automatically
+       ↓
+/wt-test + /wt-review + /wt-qa   ← run in each repo
+       ↓
+/wt-commit       ← commits + pushes in ALL repos
+                   creates linked PRs in each Bitbucket repo
+                   posts a single Jira comment listing all PRs
+                   polls ALL PRs — merges only when all are approved
+       ↓
+/wt-qa-ticket    ← QA ticket lists every PR; tester sees full change surface
+```
+
+**Key properties:**
+- Branch name is identical across all repos (`feature/IS-123-name`)
+- Each repo's `plan.md` is self-contained — no `Plugin:` tags needed
+- Addon `plan.md` includes a `## Wrapper Integration` section with the hooks it consumes, shared option keys, and a link back to the wrapper plan
+- All PRs are linked to the same Jira ticket and must all be approved before any is merged
 
 ---
 
@@ -271,11 +352,11 @@ Run any command inside Claude Code by typing `/command-name`.
 
 | Command | What It Does |
 |---|---|
-| `/wt-feature` | Reads Confluence PRD + Figma design, creates `Tasks/feature/IS-{n}/` folder with `PRD.md` and `figma-notes.md` |
-| `/wt-plan` | Generates `plan.md` from PRD + codebase research. Uses Opus for architectural thinking |
-| `/wt-design-review` | Pushes plan to Bitbucket for review. Simple changes (score 0–1) get inline approval. Complex changes get a plan review PR |
-| `/wt-implement` | Builds the feature task by task following plan.md. Runs PHPCS after every file |
-| `/wt-commit` | Stages changes, writes commit message, pushes to Bitbucket, creates PR |
+| `/wt-feature` | Reads Confluence PRD + Figma design; detects multi-repo scope from `CLAUDE.md`; creates `Tasks/feature/IS-{n}/` folder and branches in every repo in scope; saves `.repo-list.json` |
+| `/wt-plan` | Generates one `plan.md` per repo (each in its own repo's `Tasks/` folder) plus a `plan-overview.md` in the wrapper repo for cross-repo dependency order. Uses Opus for architectural thinking |
+| `/wt-design-review` | Pushes plan(s) to Bitbucket for review. Simple changes (score 0–1) get inline approval. Complex changes get a plan review PR |
+| `/wt-implement` | Reads `plan-overview.md` for dependency order; implements each repo's `plan.md` in sequence; switches working directory per-repo automatically; runs PHPCS after every file |
+| `/wt-commit` | Stages, commits, and pushes in all repos in scope; creates linked PRs in each Bitbucket repo; posts a single Jira comment with all PR links; waits for all PRs to be approved before merging any |
 | `/wt-fix-review` | Reads PR review comments, fixes clear ones automatically, asks about vague ones |
 
 ### Quality Gates
@@ -294,13 +375,13 @@ Run any command inside Claude Code by typing `/command-name`.
 |---|---|
 | `/wt-support` | Triage and resolve a support ticket (ISCS-{n}) |
 | `/wt-release` | Version bump → changelog → build zip → tag |
-| `/wt-qa-ticket` | Creates a QA handoff ticket in Jira and notifies the tester |
+| `/wt-qa-ticket` | Creates a QA handoff ticket in Jira listing all PRs (wrapper + addons) and notifies the tester |
 
 ### Utilities
 
 | Command | What It Does |
 |---|---|
-| `/wt-init-plugin` | Initialize a new plugin — creates `CLAUDE.md` and `ai-context/` files |
+| `/wt-init-plugin` | Initialize a new plugin — prompts for plugin type (`wrapper` / `addon` / `standalone`), creates `CLAUDE.md` with addon repo config (if wrapper) or wrapper back-reference (if addon), and generates `ai-context/` files |
 | `/wt-tickets` | Shows your Jira dashboard (IS + ISCS tickets assigned to you) |
 | `/wt-add-jira-comment` | Post a comment on any Jira ticket |
 
@@ -315,12 +396,12 @@ Agents are specialized AI sub-processes launched automatically by the pipeline c
 | `task-assessor` | Haiku | low | Reads Jira ticket, scores complexity (0–6), returns pipeline recipe (Simple / Medium / Complex) |
 | `prd-fetcher` | Haiku | low | Fetches PRD from Confluence and ticket details from Jira |
 | `design-reader` | Haiku | low | Reads Figma design files — screens, components, field names, UI flows |
-| `pr-manager` | Haiku | low | Creates and polls Bitbucket PRs, assigns reviewers, handles plan review flow |
-| `code-explorer` | Haiku | medium | Scans codebase — class map, hook inventory, existing patterns to follow |
+| `pr-manager` | Haiku | low | Creates and polls Bitbucket PRs; for multi-repo tickets, polls all PRs and merges only when all are approved |
+| `code-explorer` | Haiku | medium | Scans codebase — class map, hook inventory, existing patterns to follow. Runs per-repo in multi-repo features |
 | `security-auditor` | Sonnet | medium | Audits code for security issues — injection, escaping, nonces, capabilities |
-| `code-builder` | Sonnet | high | Implements feature tasks from plan.md. Runs PHPCS after every file. Max 5 iterations |
+| `code-builder` | Sonnet | high | Implements tasks from a repo's `plan.md`. Accepts `working_directory` + `repo_slug` to operate in any repo. Reads prefix from that repo's `CLAUDE.md`. Runs PHPCS in the target repo. Max 5 iterations |
 | `qa-runner` | Sonnet | high | Runs full QA pipeline — PHPCS + PHPUnit + WC compat + security + performance |
-| `feature-planner` | **Opus** | high | Generates detailed implementation plan from PRD + codebase scan. Deep architectural thinking |
+| `feature-planner` | **Opus** | high | Generates per-repo `plan.md` files (one per repo in scope) plus `plan-overview.md` for cross-repo coordination. Accepts `target_repo`, `target_repo_path`, and `is_overview` inputs |
 
 **Complexity → Agent selection:**
 
